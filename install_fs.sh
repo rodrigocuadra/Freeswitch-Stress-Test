@@ -196,7 +196,10 @@ echo -e "************************************************************"
 echo -e "*       Compiling and installing FreeSwitch from source    *"
 echo -e "************************************************************"
 ./configure --disable-dependency-tracking --enable-core-odbc-support --enable-core-odbc-support --enable-core-pgsql-support
-sudo make clean && sudo make && sudo make install
+sudo make clean
+sudo make
+sudo make install
+sudo make samples
 
 # Install audio files and music on hold
 echo -e "************************************************************"
