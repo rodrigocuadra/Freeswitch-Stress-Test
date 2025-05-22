@@ -28,7 +28,7 @@ if [ -f $filename ]; then
         esac
         n=$((n+1))
     done < $filename
-    echo -e "IP Remote....................... >  $ip_remote"
+    echo -e "IP Remote...................... >  $ip_remote"
     echo -e "SSH Remote Port................ >  $ssh_remote_port"
     echo -e "Network Interface.............. >  $interface_name"
     echo -e "Max CPU Load................... >  $maxcpuload"
@@ -37,7 +37,7 @@ if [ -f $filename ]; then
 fi
 
 while [[ $ip_remote == '' ]]; do
-    read -p "IP Remote....................... > " ip_remote
+    read -p "IP Remote...................... > " ip_remote
 done
 
 while [[ $ssh_remote_port == '' ]]; do
@@ -60,21 +60,48 @@ while [[ $call_step_seconds == '' ]]; do
     read -p "Seconds per Step............... > " call_step_seconds
 done
 
-echo -e "$ip_remote"            > config.txt
+echo -e "$ip_remote"           > config.txt
 echo -e "$ssh_remote_port"    >> config.txt
 echo -e "$interface_name"     >> config.txt
 echo -e "$maxcpuload"         >> config.txt
 echo -e "$call_step"          >> config.txt
 echo -e "$call_step_seconds"  >> config.txt
+
 # -------------------------------------------------------------
-# Copy dialplan and gateway XML to remote server
+# Create SIP Gateway to remote FreeSWITCH
 # -------------------------------------------------------------
-scp -P $ssh_remote_port dialplan_9500.xml root@$ip_remote:/etc/freeswitch/dialplan/default/9500.xml
-scp -P $ssh_remote_port gateway_call-test-trk.xml root@$ip_remote:/etc/freeswitch/sip_profiles/external/call-test-trk.xml
+echo -e "Creating local SIP gateway configuration..."
+
+cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
+<gateway name="call-test-trk">
+  <param name="proxy" value="$ip_remote"/>
+  <param name="register" value="false"/>
+  <param name="username" value="calltest"/>
+  <param name="password" value="test123"/>
+  <param name="context" value="default"/>
+</gateway>
+EOF
+
+# Reload Sofia and XML
+fs_cli -x 'reloadxml'
+fs_cli -x 'reload mod_sofia'
+
+# -------------------------------------------------------------
+# Create dialplan for extension 9500 on remote server
+# -------------------------------------------------------------
+echo -e "Creating dialplan for 9500 on remote server..."
+
+ssh -p $ssh_remote_port root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/default/9500.xml
+<extension name=\"moh-test\">
+  <condition field=\"destination_number\" expression=\"^9500$\">
+    <action application=\"answer\"/>
+    <action application=\"playback\" data=\"local_stream://moh\"/>
+    <action application=\"hangup\"/>
+  </condition>
+</extension>
+EOF"
 
 ssh -p $ssh_remote_port root@$ip_remote "fs_cli -x 'reloadxml'"
-ssh -p $ssh_remote_port root@$ip_remote "fs_cli -x 'reload mod_sofia'"
-
 
 echo -e "\n\033[1;33m************************************************************"
 echo -e "*              Starting Stress Test Execution              *"
@@ -91,7 +118,7 @@ while true; do
     date1=$(date +%s)
 
     for ((j=1; j<=call_step; j++)); do
-        fs_cli -x "originate sofia/gateway/call-test-trk/9000 &park()" >/dev/null
+        fs_cli -x "originate sofia/gateway/call-test-trk/9500 &park()" >/dev/null
         sleep 0.2
     done
 
