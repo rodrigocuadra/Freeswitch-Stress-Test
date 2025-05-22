@@ -31,12 +31,12 @@ if [ -f $filename ]; then
     echo -e "Seconds per Step............... >  $call_step_seconds"
 fi
 
-read -rp "IP Remote...................... > " -e -i "$ip_remote" ip_remote
-read -rp "SSH Remote Port (Default 22)... > " -e -i "${ssh_remote_port:-22}" ssh_remote_port
-read -rp "Network Interface name (e.g., eth0) > " -e -i "$interface_name" interface_name
-read -rp "Max CPU Load (%)............... > " -e -i "$maxcpuload" maxcpuload
-read -rp "Calls per Step................. > " -e -i "$call_step" call_step
-read -rp "Seconds per Step............... > " -e -i "$call_step_seconds" call_step_seconds
+read -rp "IP Remote............................. > " -e -i "$ip_remote" ip_remote
+read -rp "SSH Remote Port (Default 22).......... > " -e -i "${ssh_remote_port:-22}" ssh_remote_port
+read -rp "Network Interface name (e.g., eth0)... > " -e -i "$interface_name" interface_name
+read -rp "Max CPU Load (%)...................... > " -e -i "$maxcpuload" maxcpuload
+read -rp "Calls per Step........................ > " -e -i "$call_step" call_step
+read -rp "Seconds per Step...................... > " -e -i "$call_step_seconds" call_step_seconds
 
 echo -e "$ip_remote"           > config.txt
 echo -e "$ssh_remote_port"    >> config.txt
