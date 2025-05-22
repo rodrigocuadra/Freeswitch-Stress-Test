@@ -97,11 +97,11 @@ fs_cli -x 'reload mod_sofia' >/dev/null
 echo -e "Creating dialplan for 9500 on remote server..."
 
 ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
-<extension name="stress-test-sleep">
+<extension name="stress-test-loop">
   <condition field="destination_number" expression="^9500$">
-  <action application="answer"/>
-  <action application="playback" data="ivr/ivr-welcome_to_freeswitch.wav"/>
-  <action application="hangup"/>
+    <action application="answer"/>
+    <action application="loop_playback" data="ivr/ivr-welcome_to_freeswitch.wav"/>
+    <action application="hangup"/>
   </condition>
 </extension>
 EOF'
@@ -122,7 +122,7 @@ echo -e " **********************************************************************
 echo -e "     Actual Test State (Step: "$call_step_seconds"s, Core: "$numcores", Protocol: "$protocol_name", Codec: "$codec_name", Recording: "$recording")     "
 echo -e " ************************************************************************************************"
 echo -e " ------------------------------------------------------------------------------------------------"
-printf "%2s %7s %10s %16s %10s %10s %10s %12s %12s\n" "|" " Step |" "Calls |" "Asterisk Calls |" "CPU Load |" "Load |" "Memory |" "BW TX kb/s |" "BW RX kb/s |"
+printf "%2s %7s %10s %18s %10s %10s %10s %12s %12s\n" "|" " Step |" "Calls |" "Freeswitch Calls |" "CPU Load |" "Load |" "Memory |" "BW TX kb/s |" "BW RX kb/s |"
 R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
 T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
 date1=$(date +"%s")
@@ -161,7 +161,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 		if [ "$cpu" -ge 65 ] ;then
 			echo -e "\e[91m ------------------------------------------------------------------------------------------------"
 		fi
-		printf "%2s %7s %10s %16s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
+		printf "%2s %7s %10s %18s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
                 echo "$step,$i,$cpu,$load,$bwtx,$bwrx" >> data.csv
 		exitstep=false
 		x=1
@@ -171,8 +171,8 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			if [ "$call_step" -lt $x ] ;then
 				exitstep=true
 			fi
-            fs_cli -x "originate sofia/gateway/call-test-trk/9500 &park()" >/dev/null
-            sleep "$slepcall"
+                fs_cli -x "originate sofia/gateway/call-test-trk/9500 &park()" >/dev/null
+                sleep "$slepcall"
 		done
 		let step=step+1
 		let i=i+"$call_step"
