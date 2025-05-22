@@ -157,6 +157,9 @@ echo -e "\n\033[1;32m✅ Test complete. Results saved to data.csv\033[0m"
 # -------------------------------------------------------------
 echo -e "\n\033[1;34mGenerating summary from data.csv...\033[0m"
 
+systemctl restart freeswitch
+ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
+
 if [ -f data.csv ]; then
     tail -n +2 data.csv | awk -F',' -v dur="$call_duration" '
     BEGIN {
