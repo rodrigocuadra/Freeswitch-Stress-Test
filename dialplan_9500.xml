@@ -1,7 +1,0 @@
-<extension name="moh-test">
-  <condition field="destination_number" expression="^9500$">
-    <action application="answer"/>
-    <action application="playback" data="local_stream://moh"/>
-    <action application="hangup"/>
-  </condition>
-</extension>
