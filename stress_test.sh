@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 # Authors:      Rodrigo Cuadra
-#               Adapted and Improved for FreeSWITCH
+#               Final Version for FreeSWITCH
 # Date:         22-May-2025
 # Support:      rcuadra@vitalpbx.com
 
@@ -147,3 +147,37 @@ while true; do
 done
 
 echo -e "\n\033[1;32m✅ Test complete. Results saved to data.csv\033[0m"
+
+# -------------------------------------------------------------
+# Generate Summary Report
+# -------------------------------------------------------------
+echo -e "\n\033[1;34mGenerating summary from data.csv...\033[0m"
+
+if [ -f data.csv ]; then
+    tail -n +2 data.csv | awk -F',' '
+    BEGIN {
+        max_cpu=0; sum_cpu=0; count=0;
+        max_calls=0; sum_calls=0;
+    }
+    {
+        cpu = $3 + 0;
+        calls = $2 + 0;
+        if(cpu > max_cpu) max_cpu = cpu;
+        if(calls > max_calls) max_calls = calls;
+        sum_cpu += cpu;
+        sum_calls += calls;
+        count++;
+    }
+    END {
+        avg_cpu = (count > 0) ? sum_cpu / count : 0;
+        avg_calls = (count > 0) ? sum_calls / count : 0;
+        printf("\n📊 Summary:\n");
+        printf("• Max CPU Usage.......: %.2f%%\n", max_cpu);
+        printf("• Average CPU Usage...: %.2f%%\n", avg_cpu);
+        printf("• Max Concurrent Calls: %d\n", max_calls);
+        printf("• Average Calls/Step..: %.2f\n\n", avg_calls);
+    }'
+else
+    echo "data.csv not found."
+fi
+
