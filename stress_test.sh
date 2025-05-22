@@ -80,7 +80,7 @@ echo -e "Creating local SIP gateway configuration..."
 
 cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
 <gateway name="call-test-trk">
-  <param name="proxy" value="$ip_remote"/>
+  <param name="proxy" value="$ip_remote:5080"/>
   <param name="register" value="false"/>
   <param name="username" value="calltest"/>
   <param name="password" value="test123"/>
@@ -96,7 +96,7 @@ fs_cli -x 'reload mod_sofia' >/dev/null
 # -------------------------------------------------------------
 echo -e "Creating dialplan for 9500 on remote server..."
 
-ssh -p "$ssh_remote_port" root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/default/9500.xml
+ssh -p "$ssh_remote_port" root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
 <extension name=\"moh-test\">
   <condition field=\"destination_number\" expression=\"^9500$\">
     <action application=\"answer\"/>
