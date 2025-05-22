@@ -92,7 +92,7 @@ echo -e "*              Installing essential packages               *"
 echo -e "************************************************************"
 # Install basic dependencies
 apt update && apt upgrade -y
-apt install -y sudo gnupg2 wget lsb-release curl sngrep net-tools unzip
+apt install -y sudo gnupg2 wget lsb-release curl sngrep net-tools unzip software-properties-common
 
 # Install PostgreSQL
 echo -e "************************************************************"
@@ -134,35 +134,13 @@ echo -e "************************************************************"
 echo -e "************************************************************"
 echo -e "* Install dependencies required for running FreeSwitch     *"
 echo -e "************************************************************"
-sudo apt install --yes build-essential pkg-config uuid-dev git zlib1g-dev libjpeg-dev libsqlite3-dev libcurl4-openssl-dev libpcre3-dev libspeexdsp-dev libldns-dev libedit-dev libtiff5-dev yasm libopus-dev libsndfile1-dev unzip libavformat-dev libswscale-dev liblua5.2-dev liblua5.2-0 cmake libpq-dev unixodbc-dev autoconf automake ntpdate libxml2-dev libpq-dev libpq5 sngrep libswresample-dev libspeex-dev libspeexdsp-dev
-
-# Clone and build dependencies
-echo -e "************************************************************"
-echo -e "*                   Install libks.                         *"
-echo -e "************************************************************"
-cd /usr/src/ 
-sudo git clone https://github.com/signalwire/libks.git
-cd /usr/src/libks/
-sudo cmake . && sudo make && sudo make install
-sudo ldconfig && sudo ldconfig -p | sudo  grep libks
-
-echo -e "************************************************************"
-echo -e "*                   Install signalwire                     *"
-echo -e "************************************************************"
-cd /usr/src/ 
-sudo git clone https://github.com/signalwire/signalwire-c.git
-cd /usr/src/signalwire-c/
-sudo cmake . && sudo make && sudo make install
-sudo ldconfig && sudo ldconfig -p | sudo  grep signalwire
-
-echo -e "************************************************************"
-echo -e "*              Install spandsp (optional ):                *"
-echo -e "************************************************************"
-cd /usr/src/ 
-sudo git clone https://github.com/freeswitch/spandsp
-cd /usr/src/spandsp/
-sudo ./bootstrap.sh && sudo ./configure && sudo make && sudo make install
-sudo ldconfig && sudo ldconfig -p | sudo  grep spandsp
+apt install -y \
+  git dpkg-dev build-essential automake autoconf libtool \
+  libncurses5-dev libssl-dev libedit-dev python3-dev \
+  yasm libopus-dev libsndfile1-dev libavformat-dev libswscale-dev \
+  libspeexdsp-dev liblua5.2-dev libpq-dev libcurl4-openssl-dev \
+  libspandsp-dev libgsm1-dev libjpeg-dev libvpx-dev libsqlite3-dev \
+  liblua5.2-0 liblua5.2-dev pkg-config
 
 echo -e "************************************************************"
 echo -e "*                     Install Sofia-sip:                   *"
@@ -177,32 +155,20 @@ sudo ldconfig && sudo ldconfig -p | sudo  grep sofia
 echo -e "************************************************************"
 echo -e "*   Clone from the official FreeSWITCH GitHub repository   *"
 echo -e "************************************************************"
-cd /usr/src/ 
-git clone https://github.com/signalwire/freeswitch.git -bv1.10.12 freeswitch
+cd /usr/src
+git clone https://github.com/signalwire/freeswitch.git -b v1.10 freeswitch
 cd freeswitch
-git config pull.rebase true
 ./bootstrap.sh -j
-./configure
-
-# Increase the maximum number of user processes allowed temporarily
-echo -e "************************************************************"
-echo -e "*  Increase the maximum number of user processes allowed   *"
-echo -e "************************************************************"
-ulimit -u 65535
-ulimit -n 65535
+./configure --disable-dependency-tracking --enable-core-odbc-support --enable-core-odbc-support --enable-core-pgsql-support
 
 # Compiling and installing FreeSwitch from source
 echo -e "************************************************************"
 echo -e "*       Compiling and installing FreeSwitch from source    *"
 echo -e "************************************************************"
-sudo ./configure --enable-core-odbc-support --enable-core-pgsql-support
-sudo make clean && sudo make && sudo make install
-
-# Install audio files and music on hold
-echo -e "************************************************************"
-echo -e "*            Now compile sounds and music on hold          *"
-echo -e "************************************************************"
-sudo make cd-sounds-install cd-moh-install
+make -j$(nproc)
+make install
+make sounds-install moh-install
+make samples
 
 # Create simlinks to use services easily.
 echo -e "************************************************************"
