@@ -1,7 +1,7 @@
 # Author:      Rodrigo Cuadra
 # Date:        April-2025
 # Support:     rcuadra@aplitel.com
-# Description: This script automates the installation of FreeSWITCH with PostgreSQL integration from deb or source.
+# Description: This script automates the installation of FreeSWITCH with PostgreSQL integration from source.
 
 # Color codes for terminal output
 green="\033[00;32m"
