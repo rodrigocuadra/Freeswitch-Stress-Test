@@ -21,6 +21,7 @@ fs_password="fs2025"
 fs_cdr_database="freeswitch_cdr"
 fs_cdr_user="freeswitch"
 fs_cdr_password="fs2025"
+fs_default_password="r2a2025"
 
 # Load configuration from file if it exists
 filename="config.txt"
@@ -35,6 +36,7 @@ if [ -f "$filename" ]; then
             4) fs_cdr_database=${line:-$fs_cdr_database} ;;
             5) fs_cdr_user=${line:-$fs_cdr_user} ;;
             6) fs_cdr_password=${line:-$fs_cdr_password} ;;
+            7) fs_default_password=${line:-$fs_default_password} ;;
         esac
         n=$((n+1))
     done < "$filename"
@@ -48,6 +50,7 @@ read -p "FreeSWITCH Password [$fs_password]: " input && fs_password="${input:-$f
 read -p "Ring2All CDR Database Name [$fs_cdr_database]: " input && fs_cdr_database="${input:-$fs_cdr_database}"
 read -p "Ring2All CDR User Name [$fs_cdr_user]: " input && fs_cdr_user="${input:-$fs_cdr_user}"
 read -p "Ring2All CDR Password [$fs_cdr_password]: " input && fs_cdr_password="${input:-$fs_cdr_password}"
+read -p "FreeSWITCH Default Password for SIP [$fs_default_password]: " input && fs_default_password="${input:-$fs_default_password}"
 
 # Display confirmed configuration
 echo -e "Confirmed Configuration:"
@@ -57,6 +60,7 @@ echo -e "FreeSWITCH Password..................> $fs_password"
 echo -e "Ring2All CDR Database Name...........> $fs_cdr_database"
 echo -e "Ring2All CDR User Name...............> $fs_cdr_user"
 echo -e "Ring2All CDR Password................> $fs_cdr_password"
+echo -e "FreeSWITCH Default Password for SIP..> $fs_default_password"
 
 # Confirm configuration before proceeding
 echo -e "***************************************************"
