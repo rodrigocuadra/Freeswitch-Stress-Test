@@ -103,6 +103,7 @@ ssh -p "$ssh_remote_port" root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/
 <extension name="stress-test-sleep">
   <condition field="destination_number" expression="^9500$">
     <action application="answer"/>
+    <action application="export" data="rtp_timer_name=none"/>
     <action application="sleep" data="180000"/>
     <action application="hangup"/>
   </condition>
