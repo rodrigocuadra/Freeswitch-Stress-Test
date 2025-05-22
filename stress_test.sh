@@ -106,17 +106,12 @@ ssh -p "$ssh_remote_port" root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/
 </extension>
 EOF"
 
-ssh -p "$ssh_remote_port" root@$ip_remote "fs_cli -x 'reloadxml'" >/dev/null
-
-
-
-==========================
-systemctl restart freeswitch
-ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 echo -e "*** Done ***"
 echo -e " **************************************************************************************"
 echo -e " *                      Restarting Freeswitch in both Server                          *"
 echo -e " **************************************************************************************"
+systemctl restart freeswitch
+ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 sleep 10
 numcores=`nproc --all`
 exitcalls=false
