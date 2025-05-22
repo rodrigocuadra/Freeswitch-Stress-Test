@@ -99,10 +99,9 @@ echo -e "Creating dialplan for 9500 on remote server..."
 ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
 <extension name="stress-test-sleep">
   <condition field="destination_number" expression="^9500$">
-    <action application="answer"/>
-    <action application="export" data="rtp_timer_name=none"/>
-    <action application="sleep" data="180000"/>
-    <action application="hangup"/>
+  <action application="answer"/>
+  <action application="playback" data="ivr/ivr-welcome_to_freeswitch.wav"/>
+  <action application="hangup"/>
   </condition>
 </extension>
 EOF'
