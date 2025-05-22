@@ -96,7 +96,7 @@ fs_cli -x 'reload mod_sofia' >/dev/null
 # -------------------------------------------------------------
 echo -e "Creating dialplan for 9500 on remote server..."
 
-ssh -p "$ssh_remote_port" root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
+ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
 <extension name="stress-test-sleep">
   <condition field="destination_number" expression="^9500$">
     <action application="answer"/>
@@ -105,7 +105,7 @@ ssh -p "$ssh_remote_port" root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/
     <action application="hangup"/>
   </condition>
 </extension>
-EOF"
+EOF'
 
 echo -e "*** Done ***"
 echo -e " **************************************************************************************"
