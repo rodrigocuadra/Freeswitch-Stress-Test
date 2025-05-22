@@ -108,57 +108,99 @@ EOF"
 
 ssh -p "$ssh_remote_port" root@$ip_remote "fs_cli -x 'reloadxml'" >/dev/null
 
-echo -e "\n\033[1;33m************************************************************"
-echo -e "*              Starting Stress Test Execution              *"
-echo -e "************************************************************\033[0m"
 
-numcores=$(nproc --all)
-step=0
+
+==========================
+systemctl restart freeswitch
+ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
+echo -e "*** Done ***"
+echo -e " **************************************************************************************"
+echo -e " *                      Restarting Freeswitch in both Server                          *"
+echo -e " **************************************************************************************"
+sleep 10
+numcores=`nproc --all`
+exitcalls=false
 i=0
+step=0
+clear
+echo -e " ************************************************************************************************"
+echo -e "     Actual Test State (Step: "$call_step_seconds"s, Core: "$numcores", Protocol: "$protocol_name", Codec: "$codec_name", Recording: "$recording")     "
+echo -e " ************************************************************************************************"
+echo -e " ------------------------------------------------------------------------------------------------"
+printf "%2s %7s %10s %16s %10s %10s %10s %12s %12s\n" "|" " Step |" "Calls |" "Asterisk Calls |" "CPU Load |" "Load |" "Memory |" "BW TX kb/s |" "BW RX kb/s |"
+R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
+T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
+date1=$(date +"%s")
+slepcall=$(printf %.2f "$((1000000000 * call_step_seconds / call_step))e-9")
+sleep 1
+#echo -e "calls, active calls, cpu load (%), memory (%), bwtx (kb/s), bwrx(kb/s), interval(seg)" 	> data.csv
 echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
-
-while true; do
-    R1=$(cat /sys/class/net/$interface_name/statistics/rx_bytes)
-    T1=$(cat /sys/class/net/$interface_name/statistics/tx_bytes)
-    date1=$(date +%s)
-
-    for ((j=1; j<=call_step; j++)); do
-        fs_cli -x "originate sofia/gateway/call-test-trk/9500 &park()" >/dev/null
-        sleep 0.2
-    done
-
-    R2=$(cat /sys/class/net/$interface_name/statistics/rx_bytes)
-    T2=$(cat /sys/class/net/$interface_name/statistics/tx_bytes)
-    date2=$(date +%s)
-    diff=$((date2 - date1))
-    [[ $diff -eq 0 ]] && diff=1
-    bwtx=$(((T2 - T1) / 128 / diff))
-    bwrx=$(((R2 - R1) / 128 / diff))
-    load=$(awk '{print $1}' /proc/loadavg)
-    cpu=$(top -bn1 | grep Cpu | awk '{print 100 - $8}' | cut -d'.' -f1)
-    activecalls=$(fs_cli -x "show calls count" | grep total | awk '{print $1}')
-
-    echo "$step,$i,$cpu,$load,$bwtx,$bwrx" >> data.csv
-
-    if [ "$cpu" -gt "$maxcpuload" ]; then
-        echo "⚠️  CPU load too high ($cpu%), stopping test..."
-        break
-    fi
-
-    i=$((i + call_step))
-    step=$((step + 1))
-    sleep "$call_step_seconds"
-done
+	while [ $exitcalls = 'false' ]        
+        do
+       		R2=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
+       		T2=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
+		date2=$(date +"%s")
+		diff=$(($date2-$date1))
+		seconds="$(($diff % 60))"
+		T2=`expr $T2 + 128`
+		R2=`expr $R2 + 128`
+        	TBPS=`expr $T2 - $T1`
+        	RBPS=`expr $R2 - $R1`
+        	TKBPS=`expr $TBPS / 128`
+        	RKBPS=`expr $RBPS / 128`
+		bwtx="$((TKBPS/seconds))"
+		bwrx="$((RKBPS/seconds))"
+        activecalls=$(fs_cli -x "show calls count" | grep total | awk '{print $1}')
+  		load=`cat /proc/loadavg | awk '{print $0}' | cut -d " " -f 1`
+		cpu=`top -n 1 | awk 'FNR > 7 {s+=$10} END {print s}'`
+		cpuint=${cpu%.*}
+		cpu="$((cpuint/numcores))"
+		memory=`free | awk '/Mem/{printf("%.2f%"), $3/$2*100} /buffers\/cache/{printf(", buffers: %.2f%"), $4/($3+$4)*100}'`
+		if [ "$cpu" -le 34 ] ;then
+			echo -e "\e[92m ------------------------------------------------------------------------------------------------"
+		fi
+		if [ "$cpu" -ge 35 ] && [ "$cpu" -lt 65 ] ;then
+			echo -e "\e[93m ------------------------------------------------------------------------------------------------"
+		fi
+		if [ "$cpu" -ge 65 ] ;then
+			echo -e "\e[91m ------------------------------------------------------------------------------------------------"
+		fi
+		printf "%2s %7s %10s %16s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
+        echo "$step,$i,$cpu,$load,$bwtx,$bwrx" >> data.csv
+		exitstep=false
+		x=1
+		while [ $exitstep = 'false' ]  
+        	do
+			let x=x+1
+			if [ "$call_step" -lt $x ] ;then
+				exitstep=true
+			fi
+            fs_cli -x "originate sofia/gateway/call-test-trk/9500 &park()" >/dev/null
+            sleep "$slepcall"
+		done
+		let step=step+1
+		let i=i+"$call_step"
+		if [ "$cpu" -gt "$maxcpuload" ] ;then
+			exitcalls=true
+		fi
+		R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
+		T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
+		date1=$(date +"%s")
+#		sleep "$call_step_seconds"
+		sleep 1
+	done
+echo -e "\e[39m ------------------------------------------------------------------------------------------------"
+echo -e " ************************************************************************************************"
+echo -e " *                                    Restarting Freeswitch                                     *"
+echo -e " ************************************************************************************************"
+systemctl restart freeswitch
+ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 
 echo -e "\n\033[1;32m✅ Test complete. Results saved to data.csv\033[0m"
-
 # -------------------------------------------------------------
 # Summary Report
 # -------------------------------------------------------------
 echo -e "\n\033[1;34mGenerating summary from data.csv...\033[0m"
-
-systemctl restart freeswitch
-ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 
 if [ -f data.csv ]; then
     tail -n +2 data.csv | awk -F',' -v dur="$call_duration" '
@@ -189,5 +231,3 @@ if [ -f data.csv ]; then
 else
     echo "data.csv not found."
 fi
-
-
