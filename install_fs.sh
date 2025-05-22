@@ -187,7 +187,8 @@ cd /usr/src/
 git clone https://github.com/signalwire/freeswitch.git -bv1.10.12 freeswitch
 cd freeswitch
 git config pull.rebase true
-./bootstrap.sh -j
+# ./bootstrap.sh -j
+./bootstrap.sh
 ./configure
 
 # Compiling and installing FreeSwitch from source
