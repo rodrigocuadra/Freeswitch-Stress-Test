@@ -23,12 +23,14 @@ if [ -f $filename ]; then
     maxcpuload="${config[3]}"
     call_step="${config[4]}"
     call_step_seconds="${config[5]}"
+    call_duration="${config[6]}"
     echo -e "IP Remote...................... >  $ip_remote"
     echo -e "SSH Remote Port................ >  $ssh_remote_port"
     echo -e "Network Interface.............. >  $interface_name"
     echo -e "Max CPU Load................... >  $maxcpuload"
     echo -e "Calls per Step................. >  $call_step"
     echo -e "Seconds per Step............... >  $call_step_seconds"
+    echo -e "Estimated Call Duration (s).... >  $call_duration"
 fi
 
 read -rp "IP Remote............................. > " -e -i "$ip_remote" ip_remote
@@ -37,6 +39,7 @@ read -rp "Network Interface name (e.g., eth0)... > " -e -i "$interface_name" int
 read -rp "Max CPU Load (%)...................... > " -e -i "$maxcpuload" maxcpuload
 read -rp "Calls per Step........................ > " -e -i "$call_step" call_step
 read -rp "Seconds per Step...................... > " -e -i "$call_step_seconds" call_step_seconds
+read -rp "Estimated Call Duration (s)........... > " -e -i "${call_duration:-180}" call_duration
 
 echo -e "$ip_remote"           > config.txt
 echo -e "$ssh_remote_port"    >> config.txt
@@ -44,6 +47,7 @@ echo -e "$interface_name"     >> config.txt
 echo -e "$maxcpuload"         >> config.txt
 echo -e "$call_step"          >> config.txt
 echo -e "$call_step_seconds"  >> config.txt
+echo -e "$call_duration"      >> config.txt
 
 # -------------------------------------------------------------
 # Copy SSH Key to Remote Server
@@ -149,12 +153,12 @@ done
 echo -e "\n\033[1;32m✅ Test complete. Results saved to data.csv\033[0m"
 
 # -------------------------------------------------------------
-# Generate Summary Report
+# Summary Report
 # -------------------------------------------------------------
 echo -e "\n\033[1;34mGenerating summary from data.csv...\033[0m"
 
 if [ -f data.csv ]; then
-    tail -n +2 data.csv | awk -F',' '
+    tail -n +2 data.csv | awk -F',' -v dur="$call_duration" '
     BEGIN {
         max_cpu=0; sum_cpu=0; count=0;
         max_calls=0; sum_calls=0;
@@ -171,13 +175,16 @@ if [ -f data.csv ]; then
     END {
         avg_cpu = (count > 0) ? sum_cpu / count : 0;
         avg_calls = (count > 0) ? sum_calls / count : 0;
+        est_calls_per_hour = (dur > 0) ? max_calls * (3600 / dur) : 0;
         printf("\n📊 Summary:\n");
         printf("• Max CPU Usage.......: %.2f%%\n", max_cpu);
         printf("• Average CPU Usage...: %.2f%%\n", avg_cpu);
         printf("• Max Concurrent Calls: %d\n", max_calls);
-        printf("• Average Calls/Step..: %.2f\n\n", avg_calls);
+        printf("• Average Calls/Step..: %.2f\n", avg_calls);
+        printf("• ➕ Estimated Calls/hour (duration ~%ds): %.0f\n\n", dur, est_calls_per_hour);
     }'
 else
     echo "data.csv not found."
 fi
+
 
