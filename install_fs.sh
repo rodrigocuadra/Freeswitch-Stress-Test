@@ -18,7 +18,7 @@ echo -e "****************************************************"
 fs_database="freeswitch"
 fs_user="freeswitch"
 fs_password="fs2025"
-fs_cdr_database="cdr"
+fs_cdr_database="freeswitch_cdr"
 fs_cdr_user="freeswitch"
 fs_cdr_password="fs2025"
 
