@@ -1,0 +1,7 @@
+<gateway name="call-test-trk">
+  <param name="proxy" value="REMOTE_IP"/>
+  <param name="register" value="false"/>
+  <param name="username" value="calltest"/>
+  <param name="password" value="test123"/>
+  <param name="context" value="default"/>
+</gateway>
