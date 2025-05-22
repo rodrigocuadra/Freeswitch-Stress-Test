@@ -20,7 +20,7 @@ Welcome to the **FreeSWITCH Stress Test Toolkit**, a practical utility designed 
 
 ## ⚙️ Prerequisites
 
-- Two Linux servers (Debian 11/12 or compatible)
+- Two Linux servers (Debian 12)
 - Root SSH access
 - Internet access from both servers
 - Open ports for SIP communication (UDP 5060, 5080)
