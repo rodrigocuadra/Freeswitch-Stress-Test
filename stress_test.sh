@@ -145,12 +145,13 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
         	RKBPS=`expr $RBPS / 128`
 		bwtx="$((TKBPS/seconds))"
 		bwrx="$((RKBPS/seconds))"
-        activecalls=$(fs_cli -x "show calls count" | grep total | awk '{print $1}')
+                activecalls=$(fs_cli -x "show calls count" | grep total | awk '{print $1}')
   		load=`cat /proc/loadavg | awk '{print $0}' | cut -d " " -f 1`
 		cpu=`top -n 1 | awk 'FNR > 7 {s+=$10} END {print s}'`
 		cpuint=${cpu%.*}
 		cpu="$((cpuint/numcores))"
-		memory=`free | awk '/Mem/{printf("%.2f%"), $3/$2*100} /buffers\/cache/{printf(", buffers: %.2f%"), $4/($3+$4)*100}'`
+		# memory=`free | awk '/Mem/{printf("%.2f%"), $3/$2*100} /buffers\/cache/{printf(", buffers: %.2f%"), $4/($3+$4)*100}'`
+                memory=$(free | awk '/Mem:/ {used=$3; total=$2} END {if (total>0) printf("%.2f%%", used/total*100); else print "N/A"}')
 		if [ "$cpu" -le 34 ] ;then
 			echo -e "\e[92m ------------------------------------------------------------------------------------------------"
 		fi
@@ -161,7 +162,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			echo -e "\e[91m ------------------------------------------------------------------------------------------------"
 		fi
 		printf "%2s %7s %10s %16s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
-        echo "$step,$i,$cpu,$load,$bwtx,$bwrx" >> data.csv
+                echo "$step,$i,$cpu,$load,$bwtx,$bwrx" >> data.csv
 		exitstep=false
 		x=1
 		while [ $exitstep = 'false' ]  
