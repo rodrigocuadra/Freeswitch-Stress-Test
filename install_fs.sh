@@ -112,18 +112,14 @@ sudo -u postgres psql -c "CREATE ROLE $fs_user WITH LOGIN PASSWORD '$fs_password
 sudo -u postgres psql -c "CREATE DATABASE $fs_database OWNER $fs_user";
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $fs_database TO $fs_user";
 
-
-
-###################
 # Create fs_cdr database
 echo -e "************************************************************"
 echo -e "*                Create fs_cdr database              *"
 echo -e "************************************************************"
-wget --header="$gh_token" -O fs_cdr.sql https://raw.githubusercontent.com/rodrigocuadra/ring2all/refs/heads/main/sql/fsl_cdr.sql
-sed -i "s/\\\$r2a_cdr_database/$fs_cdr_database/g; \
-        s/\\\$r2a_cdr_user/$fs_cdr_user/g" ring2all_cdr.sql
-sudo -u postgres psql -f ring2all_cdr.sql
-###################
+wget https://raw.githubusercontent.com/rodrigocuadra/Freeswitch-Stress-Test/refs/heads/main/fs_cdr.sql
+sed -i "s/\\\$fs_cdr_database/$fs_cdr_database/g; \
+        s/\\\$fs_cdr_user/$fs_cdr_user/g" fs_cdr.sql
+sudo -u postgres psql -f fs_cdr.sql
 
 # Download and Install FreeSWITCH from source
 echo -e "************************************************************"
