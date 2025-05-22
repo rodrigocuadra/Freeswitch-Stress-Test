@@ -78,6 +78,8 @@ fi
 # -------------------------------------------------------------
 echo -e "Creating local SIP gateway configuration..."
 
+wget -O /usr/share/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav
+
 cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
 <gateway name="call-test-trk">
   <param name="proxy" value="$ip_remote:5080"/>
@@ -96,11 +98,14 @@ fs_cli -x 'reload mod_sofia' >/dev/null
 # -------------------------------------------------------------
 echo -e "Creating dialplan for 9500 on remote server..."
 
+ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/share/freeswitch/sounds/en/us/callie/jonathan.wav https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav"
+
 ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
-<extension name="stress-test-loop">
+<extension name="stress-test-remote">
   <condition field="destination_number" expression="^9500$">
     <action application="answer"/>
-    <action application="loop_playback" data="ivr/ivr-welcome_to_freeswitch.wav"/>
+    <action application="playback" data="jonathan.wav"/>
+    <action application="sleep" data="60000"/>
     <action application="hangup"/>
   </condition>
 </extension>
@@ -122,7 +127,7 @@ echo -e " **********************************************************************
 echo -e "     Actual Test State (Step: "$call_step_seconds"s, Core: "$numcores", Protocol: "$protocol_name", Codec: "$codec_name", Recording: "$recording")     "
 echo -e " ************************************************************************************************"
 echo -e " ------------------------------------------------------------------------------------------------"
-printf "%2s %7s %10s %18s %10s %10s %10s %12s %12s\n" "|" " Step |" "Calls |" "Freeswitch Calls |" "CPU Load |" "Load |" "Memory |" "BW TX kb/s |" "BW RX kb/s |"
+printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " Step |" "Calls |" "Freeswitch Channels |" "CPU Load |" "Load |" "Memory |" "BW TX kb/s |" "BW RX kb/s |"
 R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
 T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
 date1=$(date +"%s")
@@ -145,7 +150,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
         	RKBPS=`expr $RBPS / 128`
 		bwtx="$((TKBPS/seconds))"
 		bwrx="$((RKBPS/seconds))"
-                activecalls=$(fs_cli -x "show calls count" | grep total | awk '{print $1}')
+                activecalls=$(fs_cli -x "show channels count" | grep total | awk '{print $1}')
   		load=`cat /proc/loadavg | awk '{print $0}' | cut -d " " -f 1`
 		cpu=`top -n 1 | awk 'FNR > 7 {s+=$10} END {print s}'`
 		cpuint=${cpu%.*}
@@ -161,7 +166,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 		if [ "$cpu" -ge 65 ] ;then
 			echo -e "\e[91m ------------------------------------------------------------------------------------------------"
 		fi
-		printf "%2s %7s %10s %18s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
+		printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
                 echo "$step,$i,$cpu,$load,$bwtx,$bwrx" >> data.csv
 		exitstep=false
 		x=1
@@ -171,7 +176,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			if [ "$call_step" -lt $x ] ;then
 				exitstep=true
 			fi
-                fs_cli -x "originate sofia/gateway/call-test-trk/9500 &park()" >/dev/null
+                fs_cli -x "originate {absolute_codec_string=PCMU,ignore_early_media=true}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)" >/dev/null
                 sleep "$slepcall"
 		done
 		let step=step+1
