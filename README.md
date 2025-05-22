@@ -4,7 +4,7 @@ Welcome to the **FreeSWITCH Stress Test Toolkit**, a practical utility designed 
 
 - 🎯 Install FreeSWITCH from source
 - 📊 Generate stress traffic to test server stability
-- 🧾 Store CDRs (Call Detail Records) for later analysis
+- 🧾 Store CDRs (Call Detail Records) in a PostgreSQL database
 
 ---
 
@@ -12,9 +12,9 @@ Welcome to the **FreeSWITCH Stress Test Toolkit**, a practical utility designed 
 
 | File              | Description                                      |
 |-------------------|--------------------------------------------------|
-| `install_fs.sh`   | Script to install FreeSWITCH from source         |
+| `install_fs.sh`   | Script to install FreeSWITCH from source and create CDR DB |
 | `stress_test.sh`  | Script to generate high call load                |
-| `fs_cdr.sql`      | SQL schema to create the CDR table               |
+| `fs_cdr.sql`      | SQL schema used within the installer             |
 
 ---
 
@@ -37,7 +37,7 @@ chmod +x install_fs.sh
 ./install_fs.sh
 ```
 
-> ☑️ This will automatically download, compile, and install FreeSWITCH with standard SIP profiles.
+> ☑️ This script not only installs FreeSWITCH but also sets up a PostgreSQL database with the proper `cdr` table by executing `fs_cdr.sql`. This simulates a real production scenario by storing live call records.
 
 ---
 
@@ -59,15 +59,6 @@ During execution, the script will:
 - Start launching calls incrementally to stress the system
 - Monitor CPU, memory, network usage, and active calls
 - Log results into `data.csv`
-
----
-
-## 📁 Optional: Set Up CDR Storage
-
-If you want to store detailed CDRs from your tests:
-
-1. Create the database and table using `fs_cdr.sql` on your preferred SQL engine (PostgreSQL recommended).
-2. Configure FreeSWITCH to log CDRs into the database using `mod_cdr_pg_csv` or `mod_odbc_cdr`.
 
 ---
 
