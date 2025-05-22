@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 # Authors:      Rodrigo Cuadra
-#               Adapted for FreeSWITCH
+#               Adapted and Improved for FreeSWITCH
 # Date:         22-May-2025
 # Support:      rcuadra@vitalpbx.com
 
@@ -16,18 +16,13 @@ echo -e "\033[0m"
 filename="config.txt"
 if [ -f $filename ]; then
     echo -e "Loading config file..."
-    n=1
-    while read line; do
-        case $n in
-            1) ip_remote=$line ;;
-            2) ssh_remote_port=$line ;;
-            3) interface_name=$line ;;
-            4) maxcpuload=$line ;;
-            5) call_step=$line ;;
-            6) call_step_seconds=$line ;;
-        esac
-        n=$((n+1))
-    done < $filename
+    mapfile -t config < "$filename"
+    ip_remote="${config[0]}"
+    ssh_remote_port="${config[1]}"
+    interface_name="${config[2]}"
+    maxcpuload="${config[3]}"
+    call_step="${config[4]}"
+    call_step_seconds="${config[5]}"
     echo -e "IP Remote...................... >  $ip_remote"
     echo -e "SSH Remote Port................ >  $ssh_remote_port"
     echo -e "Network Interface.............. >  $interface_name"
@@ -36,29 +31,12 @@ if [ -f $filename ]; then
     echo -e "Seconds per Step............... >  $call_step_seconds"
 fi
 
-while [[ $ip_remote == '' ]]; do
-    read -p "IP Remote...................... > " ip_remote
-done
-
-while [[ $ssh_remote_port == '' ]]; do
-    read -p "SSH Remote Port (Default 22)... > " ssh_remote_port
-done
-
-while [[ $interface_name == '' ]]; do
-    read -p "Network Interface name (e.g., eth0) > " interface_name
-done
-
-while [[ $maxcpuload == '' ]]; do
-    read -p "Max CPU Load (%)............... > " maxcpuload
-done
-
-while [[ $call_step == '' ]]; do
-    read -p "Calls per Step................. > " call_step
-done
-
-while [[ $call_step_seconds == '' ]]; do
-    read -p "Seconds per Step............... > " call_step_seconds
-done
+read -rp "IP Remote...................... > " -e -i "$ip_remote" ip_remote
+read -rp "SSH Remote Port (Default 22)... > " -e -i "${ssh_remote_port:-22}" ssh_remote_port
+read -rp "Network Interface name (e.g., eth0) > " -e -i "$interface_name" interface_name
+read -rp "Max CPU Load (%)............... > " -e -i "$maxcpuload" maxcpuload
+read -rp "Calls per Step................. > " -e -i "$call_step" call_step
+read -rp "Seconds per Step............... > " -e -i "$call_step_seconds" call_step_seconds
 
 echo -e "$ip_remote"           > config.txt
 echo -e "$ssh_remote_port"    >> config.txt
@@ -66,6 +44,30 @@ echo -e "$interface_name"     >> config.txt
 echo -e "$maxcpuload"         >> config.txt
 echo -e "$call_step"          >> config.txt
 echo -e "$call_step_seconds"  >> config.txt
+
+# -------------------------------------------------------------
+# Copy SSH Key to Remote Server
+# -------------------------------------------------------------
+echo -e "************************************************************"
+echo -e "*          Copy Authorization key to remote server         *"
+echo -e "************************************************************"
+
+sshKeyFile="/root/.ssh/id_rsa"
+
+if [ ! -f "$sshKeyFile" ]; then
+    echo -e "Generating SSH key..."
+    ssh-keygen -f "$sshKeyFile" -t rsa -N '' >/dev/null
+fi
+
+echo -e "Copying public key to $ip_remote..."
+ssh-copy-id -i "${sshKeyFile}.pub" -p "$ssh_remote_port" root@$ip_remote
+
+if [ $? -eq 0 ]; then
+    echo -e "*** SSH key installed successfully. ***"
+else
+    echo -e "❌ Failed to copy SSH key. You might need to check connectivity or credentials."
+    exit 1
+fi
 
 # -------------------------------------------------------------
 # Create SIP Gateway to remote FreeSWITCH
@@ -82,16 +84,15 @@ cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
 </gateway>
 EOF
 
-# Reload Sofia and XML
-fs_cli -x 'reloadxml'
-fs_cli -x 'reload mod_sofia'
+fs_cli -x 'reloadxml' >/dev/null
+fs_cli -x 'reload mod_sofia' >/dev/null
 
 # -------------------------------------------------------------
 # Create dialplan for extension 9500 on remote server
 # -------------------------------------------------------------
 echo -e "Creating dialplan for 9500 on remote server..."
 
-ssh -p $ssh_remote_port root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/default/9500.xml
+ssh -p "$ssh_remote_port" root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/default/9500.xml
 <extension name=\"moh-test\">
   <condition field=\"destination_number\" expression=\"^9500$\">
     <action application=\"answer\"/>
@@ -101,7 +102,7 @@ ssh -p $ssh_remote_port root@$ip_remote "cat <<EOF > /etc/freeswitch/dialplan/de
 </extension>
 EOF"
 
-ssh -p $ssh_remote_port root@$ip_remote "fs_cli -x 'reloadxml'"
+ssh -p "$ssh_remote_port" root@$ip_remote "fs_cli -x 'reloadxml'" >/dev/null
 
 echo -e "\n\033[1;33m************************************************************"
 echo -e "*              Starting Stress Test Execution              *"
@@ -126,17 +127,17 @@ while true; do
     T2=$(cat /sys/class/net/$interface_name/statistics/tx_bytes)
     date2=$(date +%s)
     diff=$((date2 - date1))
+    [[ $diff -eq 0 ]] && diff=1
     bwtx=$(((T2 - T1) / 128 / diff))
     bwrx=$(((R2 - R1) / 128 / diff))
-    load=$(cat /proc/loadavg | awk '{print $1}')
-    cpu=$(top -bn1 | grep Cpu | awk '{print 100 - $8}')
+    load=$(awk '{print $1}' /proc/loadavg)
+    cpu=$(top -bn1 | grep Cpu | awk '{print 100 - $8}' | cut -d'.' -f1)
     activecalls=$(fs_cli -x "show calls count" | grep total | awk '{print $1}')
 
     echo "$step,$i,$cpu,$load,$bwtx,$bwrx" >> data.csv
 
-    cpuint={cpu%.*}
-    if [ "$cpuint" -gt "$maxcpuload" ]; then
-        echo "CPU load too high ($cpu%), stopping test..."
+    if [ "$cpu" -gt "$maxcpuload" ]; then
+        echo "⚠️  CPU load too high ($cpu%), stopping test..."
         break
     fi
 
@@ -145,4 +146,4 @@ while true; do
     sleep "$call_step_seconds"
 done
 
-echo -e "\n\033[1;32mTest complete. Results saved to data.csv\033[0m"
+echo -e "\n\033[1;32m✅ Test complete. Results saved to data.csv\033[0m"
