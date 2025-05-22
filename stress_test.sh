@@ -78,7 +78,7 @@ fi
 # -------------------------------------------------------------
 echo -e "Creating local SIP gateway configuration..."
 
-wget -O /usr/share/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav
+wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav
 
 cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
 <gateway name="call-test-trk">
@@ -98,7 +98,7 @@ fs_cli -x 'reload mod_sofia' >/dev/null
 # -------------------------------------------------------------
 echo -e "Creating dialplan for 9500 on remote server..."
 
-ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/share/freeswitch/sounds/en/us/callie/jonathan.wav https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav"
+ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav"
 
 ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
 <extension name="stress-test-remote">
