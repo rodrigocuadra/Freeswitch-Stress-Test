@@ -119,9 +119,9 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $fs_database TO $fs_u
 echo -e "************************************************************"
 echo -e "*                Create fs_cdr database              *"
 echo -e "************************************************************"
-wget --header="$gh_token" -O ring2all_cdr.sql https://raw.githubusercontent.com/rodrigocuadra/ring2all/refs/heads/main/sql/ring2all_cdr.sql
-sed -i "s/\\\$r2a_cdr_database/$r2a_cdr_database/g; \
-        s/\\\$r2a_cdr_user/$r2a_cdr_user/g" ring2all_cdr.sql
+wget --header="$gh_token" -O fs_cdr.sql https://raw.githubusercontent.com/rodrigocuadra/ring2all/refs/heads/main/sql/fsl_cdr.sql
+sed -i "s/\\\$r2a_cdr_database/$fs_cdr_database/g; \
+        s/\\\$r2a_cdr_user/$fs_cdr_user/g" ring2all_cdr.sql
 sudo -u postgres psql -f ring2all_cdr.sql
 ###################
 
