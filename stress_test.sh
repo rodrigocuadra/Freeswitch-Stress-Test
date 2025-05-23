@@ -97,9 +97,9 @@ cat <<EOF > /etc/freeswitch/dialplan/public/9600.xml
 <extension name="stress-test-9600">
   <condition field="destination_number" expression="^9600$">
     <action application="set" data="hangup_after_bridge=true"/>
+    <action application="set" data="execute_on_answer=playback(sarah.wav)"/>
     <action application="answer"/>
     <action application="sleep" data="500"/>
-    <action application="playback" data="sarah.wav"/>
     <action application="bridge" data="sofia/gateway/call-test-trk/9500"/>
   </condition>
 </extension>
@@ -188,7 +188,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			if [ "$call_step" -lt $x ] ;then
 				exitstep=true
 			fi
-                fs_cli -x "originate {absolute_codec_string=PCMU,ignore_early_media=true}sofia/gateway/call-test-trk/9600 &park()" >/dev/null
+                fs_cli -x "originate {absolute_codec_string=PCMU,ignore_early_media=true}sofia/internal/9600@localhost &park()" >/dev/null
                 sleep "$slepcall"
 		done
 		let step=step+1
