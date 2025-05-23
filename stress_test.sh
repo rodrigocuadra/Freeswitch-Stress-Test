@@ -337,10 +337,18 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			if [ "$call_step" -lt $x ] ;then
 				exitstep=true
 			fi
+   
+                        base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
+                        if [ "$recording" = "yes" ]; then
+                            timestamp=$(date +%s%N)
+                            recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
+			    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)"
+                        else
+                            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)"
+                        fi
+                        fs_cli -x "originate $originate_string" >/dev/null 2>&1
 
-                fs_cli -x "originate {ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)" >/dev/null 2>&1
-	
-		sleep "$slepcall"
+	        sleep "$slepcall"
 		done
 		let step=step+1
 		let i=i+"$call_step"
