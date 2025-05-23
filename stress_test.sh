@@ -268,9 +268,8 @@ ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/
 <extension name="stress-test-remote">
   <condition field="destination_number" expression="^9500$">
     <action application="answer"/>
-    <action application="playback" data="/usr/local/freeswitch/sounds/en/us/callie/sarah.wav"/>
-    <action application="sleep" data="60000"/>
-    <action application="hangup"/>
+    <action application="playback" data="/usr/local/freeswitch/sounds/en/us/callie/sarah.wav" loops="3"/>
+    <action application="sleep" data="1000"/>
   </condition>
 </extension>
 EOF'
@@ -361,13 +360,13 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 				exitstep=true
 			fi
    
-                        base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
+			base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
                         if [ "$recording" = "yes" ]; then
                             timestamp=$(date +%s%N)
                             recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
-			    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
+			    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav,loops=3)"
                         else
-                            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
+                            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav,loops=3)"
                         fi
                         fs_cli -x "originate $originate_string" >/dev/null 2>&1
 
