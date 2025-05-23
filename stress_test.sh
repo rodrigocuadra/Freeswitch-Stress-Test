@@ -237,10 +237,10 @@ echo -e "Creating local SIP gateway configuration..."
 
 cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
 <gateway name="call-test-trk">
-  <param name="proxy" value="$ip_remote:5080"/>
-  <param name="register" value="false"/>
   <param name="username" value="calltest"/>
   <param name="password" value="test123"/>
+  <param name="proxy" value="$ip_remote:5080"/>
+  <param name="register" value="true"/>
   <param name="context" value="default"/>
 </gateway>
 EOF
@@ -251,6 +251,24 @@ EOF
 wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav
 chmod 644 /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
 chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
+
+# -------------------------------------------------------------
+# Create SIP Account for Gateway Register
+# -------------------------------------------------------------
+echo -e "Create SIP Account for Gateway Register..."
+
+ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/directory/default/calltest.xml
+<include>
+  <user id="calltest">
+    <params>
+      <param name="password" value="test123"/>
+    </params>
+    <variables>
+      <variable name="user_context" value="default"/>
+    </variables>
+  </user>
+</include>
+EOF'
 
 # -------------------------------------------------------------
 # Create dialplan for extension 9500 on remote server
