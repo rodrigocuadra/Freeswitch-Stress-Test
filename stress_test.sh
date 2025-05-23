@@ -188,7 +188,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			if [ "$call_step" -lt $x ] ;then
 				exitstep=true
 			fi
-		fs_cli -x 'originate {absolute_codec_string=PCMU,ignore_early_media=true origination_caller_id_number=9600}sofia/internal/9600@localhost &park()'
+		fs_cli -x 'originate {absolute_codec_string=PCMU,ignore_early_media=true,origination_caller_id_number=9600}sofia/internal/9600@localhost &park()'
                 sleep "$slepcall"
 		done
 		let step=step+1
