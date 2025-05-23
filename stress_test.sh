@@ -285,7 +285,7 @@ i=0
 step=0
 clear
 echo -e " *****************************************************************************************************"
-echo -e "     Actual Test State (Step: "$call_step_seconds"s, Core: "$numcores", Protocol: SIP(Sofia), Codec: PCMU, Recording: No)     "
+echo -e "     Actual Test State (Step: "$call_step_seconds"s, Core: "$numcores", Protocol: SIP(Sofia), Codec: "$codec_name", Recording: "$recording")     "
 echo -e " *****************************************************************************************************"
 echo -e " -----------------------------------------------------------------------------------------------------"
 printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " Step |" "Calls |" "Freeswitch Channels |" "CPU Load |" "Load |" "Memory |" "BW TX kb/s |" "BW RX kb/s |"
