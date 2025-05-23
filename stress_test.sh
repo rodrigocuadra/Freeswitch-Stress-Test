@@ -364,9 +364,9 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
                         if [ "$recording" = "yes" ]; then
                             timestamp=$(date +%s%N)
                             recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
-			    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav,loops=3)"
+			    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
                         else
-                            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav,loops=3)"
+                            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
                         fi
                         fs_cli -x "originate $originate_string" >/dev/null 2>&1
 
