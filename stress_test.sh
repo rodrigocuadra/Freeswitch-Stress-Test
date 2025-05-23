@@ -93,23 +93,11 @@ cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
 EOF
 
 # -------------------------------------------------------------
-# Create Extension 9600
+# Download Local Audio
 # -------------------------------------------------------------
 wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav
 chmod 644 /usr/local/freeswitch/sounds/en/us/callie/sarah.wav
 chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/sarah.wav
-
-cat <<EOF > /etc/freeswitch/dialplan/public/9600.xml
-<extension name="stress-test-9600">
-  <condition field="destination_number" expression="^9600$">
-    <action application="set" data="hangup_after_bridge=true"/>
-    <action application="set" data="execute_on_answer=playback /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"/>
-    <action application="answer"/>
-    <action application="sleep" data="500"/>
-    <action application="bridge" data="sofia/gateway/call-test-trk/9500"/>
-  </condition>
-</extension>
-EOF
 
 # -------------------------------------------------------------
 # Create dialplan for extension 9500 on remote server
@@ -196,7 +184,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			if [ "$call_step" -lt $x ] ;then
 				exitstep=true
 			fi
-                fs_cli -x "originate {absolute_codec_string=PCMU,ignore_early_media=true,origination_caller_id_number=9600}loopback/9600/public &park()"  >/dev/null 2>&1
+                fs_cli -x "originate {ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=PCMU}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)"  >/dev/null 2>&1
                 sleep "$slepcall"
 		done
 		let step=step+1
@@ -207,7 +195,6 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 		R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
 		T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
 		date1=$(date +"%s")
-#		sleep "$call_step_seconds"
 		sleep 1
 	done
 echo -e "\e[39m -----------------------------------------------------------------------------------------------------"
