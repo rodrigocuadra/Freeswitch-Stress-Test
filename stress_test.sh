@@ -14,44 +14,182 @@ echo -e "************************************************************"
 echo -e "\033[0m"
 
 filename="config.txt"
-if [ -f $filename ]; then
-    echo -e "Loading config file..."
-    mapfile -t config < "$filename"
-    ip_remote="${config[0]}"
-    ssh_remote_port="${config[1]}"
-    interface_name="${config[2]}"
-    maxcpuload="${config[3]}"
-    call_step="${config[4]}"
-    call_step_seconds="${config[5]}"
-    call_duration="${config[6]}"
-    echo -e "IP Remote...................... >  $ip_remote"
-    echo -e "SSH Remote Port................ >  $ssh_remote_port"
-    echo -e "Network Interface.............. >  $interface_name"
-    echo -e "Max CPU Load................... >  $maxcpuload"
-    echo -e "Calls per Step................. >  $call_step"
-    echo -e "Seconds per Step............... >  $call_step_seconds"
-    echo -e "Estimated Call Duration (s).... >  $call_duration"
-fi
+	if [ -f $filename ]; then
+		echo -e "config file"
+		n=1
+		while read line; do
+			case $n in
+				1)
+					ip_local=$line
+  				;;
+				2)
+					ip_remote=$line
+  				;;
+				3)
+					ssh_remote_port=$line
+  				;;
+				4)
+					interface_name=$line
+  				;;
+				5)
+					codec=$line
+  				;;
+				6)
+					recording=$line
+  				;;
+				7)
+					maxcpuload=$line
+  				;;
+				8)
+					call_step=$line
+  				;;
+				9)
+					call_step_seconds=$line
+  				;;
+				10)
+					call_duration=$line
+  				;;
+                        esac
+			n=$((n+1))
+		done < $filename
+		echo -e "IP Local....................................... >  $ip_local"	
+		echo -e "IP Remote...................................... >  $ip_remote"
+		echo -e "SSH Remote Port (Default is 22)................ >  $ssh_remote_port"
+		echo -e "Network Interface name (ej: eth0).............. >  $interface_name"
+		echo -e "Codec (1.-PCMU, 2.-G79, 3.- OPUS).............. >  $codec"
+		echo -e "Recording Calls (yes,no)....................... >  $recording"
+		echo -e "Max CPU Load (Recommended 75%)................. >  $maxcpuload"
+		echo -e "Calls Step (Recommended 5-100)................. >  $call_step"
+		echo -e "Seconds between each step (Recommended 5-30)... >  $call_step_seconds"
+		echo -e "Estimated Call Duration Seconds (ej: 180)...... >  $call_duration"
 
-read -rp "IP Remote............................. > " -e -i "$ip_remote" ip_remote
-read -rp "SSH Remote Port (Default 22).......... > " -e -i "${ssh_remote_port:-22}" ssh_remote_port
-read -rp "Network Interface name (e.g., eth0)... > " -e -i "$interface_name" interface_name
-read -rp "Max CPU Load (%)...................... > " -e -i "$maxcpuload" maxcpuload
-read -rp "Calls per Step........................ > " -e -i "$call_step" call_step
-read -rp "Seconds per Step...................... > " -e -i "$call_step_seconds" call_step_seconds
-read -rp "Estimated Call Duration (s)........... > " -e -i "${call_duration:-180}" call_duration
+	fi
+	
+	while [[ $ip_local == '' ]]
+	do
+    		read -p "IP Local....................................... > " ip_local 
+	done 
 
-echo -e "$ip_remote"           > config.txt
-echo -e "$ssh_remote_port"    >> config.txt
-echo -e "$interface_name"     >> config.txt
-echo -e "$maxcpuload"         >> config.txt
-echo -e "$call_step"          >> config.txt
-echo -e "$call_step_seconds"  >> config.txt
-echo -e "$call_duration"      >> config.txt
+	while [[ $ip_remote == '' ]]
+	do
+    		read -p "IP Remote...................................... > " ip_remote 
+	done
 
-codec="None"
-recording="no"
-protocol="SIP (Sofia)"
+	while [[ $ssh_remote_port == '' ]]
+	do
+    		read -p "SSH Remote Port (Default is 22)................ > " ssh_remote_port 
+	done
+
+	while [[ $interface_name == '' ]]
+	do
+    		read -p "Network Interface name (ej: eth0).............. > " interface_name 
+	done
+
+	while [[ $codec == '' ]]
+	do
+    		read -p "Codec (1.-PCMU, 2.-G79, 3.- OPUS).............. > " codec 
+	done 
+
+	while [[ $recording == '' ]]
+	do
+    		read -p "Recording Calls (yes,no)....................... > " recording 
+	done 
+
+	while [[ $maxcpuload == '' ]]
+	do
+    		read -p "Max CPU Load (Recommended 75%)................. > " maxcpuload 
+	done 
+
+	while [[ $call_step == '' ]]
+	do
+    		read -p "Calls Step (Recommended 5-100)................. > " call_step 
+	done 
+
+	while [[ $call_step_seconds == '' ]]
+	do
+    		read -p "Seconds between each step (Recommended 5-30)... > " call_step_seconds
+	done 
+
+ 	while [[ $call_duration == '' ]]
+	do
+    		read -p "Estimated Call Duration Seconds (ej: 180)...... > " call_duration
+	done 
+
+echo -e "************************************************************"
+echo -e "*                   Check Information                      *"
+echo -e "*        Make sure that both server have communication     *"
+echo -e "************************************************************"
+	while [[ $veryfy_info != yes && $veryfy_info != no ]]
+	do
+    		read -p "Are you sure to continue with this settings? (yes,no) > " veryfy_info 
+	done
+
+	if [ "$veryfy_info" = yes ] ;then
+		echo -e "************************************************************"
+		echo -e "*                Starting to run the scripts               *"
+		echo -e "************************************************************"
+	else
+		while [[ $ip_local == '' ]]
+		do
+    			read -p "IP Local....................................... > " ip_local 
+		done 
+
+		while [[ $ip_remote == '' ]]
+		do
+    			read -p "IP Remote...................................... > " ip_remote 
+		done
+
+		while [[ $ssh_remote_port == '' ]]
+		do
+    			read -p "SSH Remote Port (Default is 22)................. > " ssh_remote_port 
+		done
+
+		while [[ $interface_name == '' ]]
+		do
+    			read -p "Network Interface name (ej: eth0).............. > " interface_name 
+		done
+
+		while [[ $codec == '' ]]
+		do
+    			read -p "Codec (1.-PCMU, 2.-G79, 3.- OPUS............... > " codec 
+		done 
+
+		while [[ $recording == '' ]]
+		do
+    			read -p "Recording Calls (yes,no)....................... > " recording 
+		done 
+
+		while [[ $maxcpuload == '' ]]
+		do
+    			read -p "Max CPU Load (Recommended 75%).................. > " maxcpuload 
+		done 
+
+		while [[ $call_step == '' ]]
+		do
+    			read -p "Calls Step (Recommended 5-100)................. > " call_step 
+		done 
+
+		while [[ $call_step_seconds == '' ]]
+		do
+    			read -p "Seconds between each step (Recommended 5-30)... > " call_step_seconds
+		done 
+  
+		while [[ $call_duration == '' ]]
+		do
+    			read -p "Estimated Call Duration Seconds (ej: 180)...... > " call_duration
+		done 
+         fi
+
+echo -e "$ip_local" 		> config.txt
+echo -e "$ip_remote" 		>> config.txt
+echo -e "$ssh_remote_port"	>> config.txt
+echo -e "$interface_name" 	>> config.txt
+echo -e "$codec" 		>> config.txt
+echo -e "$recording" 		>> config.txt
+echo -e "$maxcpuload"     	>> config.txt
+echo -e "$call_step" 		>> config.txt
+echo -e "$call_step_seconds" 	>> config.txt
+echo -e "$call_duration" 	>> config.txt
 
 # -------------------------------------------------------------
 # Copy SSH Key to Remote Server
