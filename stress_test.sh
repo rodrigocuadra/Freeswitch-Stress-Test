@@ -132,9 +132,9 @@ ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/
 EOF'
 
 echo -e "*** Done ***"
-echo -e " **************************************************************************************"
-echo -e " *                      Restarting Freeswitch in both Server                          *"
-echo -e " **************************************************************************************"
+echo -e " *******************************************************************************************"
+echo -e " *                        Restarting Freeswitch in both Server                             *"
+echo -e " *******************************************************************************************"
 systemctl restart freeswitch
 ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 sleep 10
@@ -143,9 +143,9 @@ exitcalls=false
 i=0
 step=0
 clear
-echo -e " ************************************************************************************************"
+echo -e " *****************************************************************************************************"
 echo -e "     Actual Test State (Step: "$call_step_seconds"s, Core: "$numcores", Protocol: SIP(Sofia), Codec: PCMU, Recording: No)     "
-echo -e " ************************************************************************************************"
+echo -e " *****************************************************************************************************"
 echo -e " -----------------------------------------------------------------------------------------------------"
 printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " Step |" "Calls |" "Freeswitch Channels |" "CPU Load |" "Load |" "Memory |" "BW TX kb/s |" "BW RX kb/s |"
 R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
@@ -211,9 +211,9 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 		sleep 1
 	done
 echo -e "\e[39m -----------------------------------------------------------------------------------------------------"
-echo -e " ************************************************************************************************"
-echo -e " *                                    Restarting Freeswitch                                     *"
-echo -e " ************************************************************************************************"
+echo -e " *****************************************************************************************************"
+echo -e " *                                      Restarting Freeswitch                                        *"
+echo -e " *****************************************************************************************************"
 systemctl restart freeswitch
 ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 
