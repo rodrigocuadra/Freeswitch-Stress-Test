@@ -231,21 +231,6 @@ case "$codec" in
 esac
 
 # -------------------------------------------------------------
-# Create SIP Gateway to remote FreeSWITCH
-# -------------------------------------------------------------
-echo -e "Creating local SIP gateway configuration..."
-
-cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
-<gateway name="call-test-trk">
-  <param name="username" value="calltest"/>
-  <param name="password" value="test123"/>
-  <param name="proxy" value="$ip_remote:5080"/>
-  <param name="register" value="true"/>
-  <param name="context" value="default"/>
-</gateway>
-EOF
-
-# -------------------------------------------------------------
 # Download Local Audio
 # -------------------------------------------------------------
 wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav
@@ -290,13 +275,33 @@ ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/
 </extension>
 EOF'
 
-echo -e "*** Done ***"
 echo -e " *******************************************************************************************"
-echo -e " *                        Restarting Freeswitch in both Server                             *"
+echo -e " *                        Restarting Freeswitch in remote Server                           *"
+echo -e " *******************************************************************************************"
+ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
+sleep 5
+
+# -------------------------------------------------------------
+# Create SIP Gateway to remote FreeSWITCH
+# -------------------------------------------------------------
+echo -e "Creating local SIP gateway configuration..."
+
+cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
+<gateway name="call-test-trk">
+  <param name="username" value="calltest"/>
+  <param name="password" value="test123"/>
+  <param name="proxy" value="$ip_remote:5080"/>
+  <param name="register" value="true"/>
+  <param name="context" value="default"/>
+</gateway>
+EOF
+
+echo -e " *******************************************************************************************"
+echo -e " *                        Restarting Freeswitch in local Server                            *"
 echo -e " *******************************************************************************************"
 systemctl restart freeswitch
-ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
-sleep 10
+
+sleep 5
 numcores=`nproc --all`
 exitcalls=false
 i=0
