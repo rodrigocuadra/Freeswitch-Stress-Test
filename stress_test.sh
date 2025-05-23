@@ -215,6 +215,21 @@ else
     exit 1
 fi
 
+case "$codec" in
+  1)
+    codec_name="PCMU"
+    ;;
+  2)
+    codec_name="G729"
+    ;;
+  3)
+    codec_name="opus"
+    ;;
+  *)
+    codec_name="PCMU"
+    ;;
+esac
+
 # -------------------------------------------------------------
 # Create SIP Gateway to remote FreeSWITCH
 # -------------------------------------------------------------
@@ -322,8 +337,10 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			if [ "$call_step" -lt $x ] ;then
 				exitstep=true
 			fi
-                fs_cli -x "originate {ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=PCMU}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)"  >/dev/null 2>&1
-                sleep "$slepcall"
+
+                fs_cli -x "originate {ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)" >/dev/null 2>&1
+	
+		sleep "$slepcall"
 		done
 		let step=step+1
 		let i=i+"$call_step"
