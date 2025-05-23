@@ -157,7 +157,7 @@ sleep 1
 echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 	while [ $exitcalls = 'false' ]        
         do
-       		R2=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
+     		R2=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
        		T2=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
 		date2=$(date +"%s")
 		diff=$(($date2-$date1))
