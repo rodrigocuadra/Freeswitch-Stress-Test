@@ -248,24 +248,24 @@ EOF
 # -------------------------------------------------------------
 # Download Local Audio
 # -------------------------------------------------------------
-wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav
-chmod 644 /usr/local/freeswitch/sounds/en/us/callie/sarah.wav
-chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/sarah.wav
+wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav
+chmod 644 /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
+chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
 
 # -------------------------------------------------------------
 # Create dialplan for extension 9500 on remote server
 # -------------------------------------------------------------
 echo -e "Creating dialplan for 9500 on remote server..."
 
-ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav"
-ssh -p $ssh_remote_port root@$ip_remote "chmod 644 /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav"
-ssh -p $ssh_remote_port root@$ip_remote "chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav"
+ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav"
+ssh -p $ssh_remote_port root@$ip_remote "chmod 644 /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"
+ssh -p $ssh_remote_port root@$ip_remote "chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"
 
 ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
 <extension name="stress-test-remote">
   <condition field="destination_number" expression="^9500$">
     <action application="answer"/>
-    <action application="playback" data="/usr/local/freeswitch/sounds/en/us/callie/jonathan.wav"/>
+    <action application="playback" data="/usr/local/freeswitch/sounds/en/us/callie/sarah.wav"/>
     <action application="sleep" data="60000"/>
     <action application="hangup"/>
   </condition>
@@ -342,9 +342,9 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
                         if [ "$recording" = "yes" ]; then
                             timestamp=$(date +%s%N)
                             recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
-			    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)"
+			    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
                         else
-                            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)"
+                            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
                         fi
                         fs_cli -x "originate $originate_string" >/dev/null 2>&1
 
