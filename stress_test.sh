@@ -248,7 +248,7 @@ EOF
 # -------------------------------------------------------------
 # Download Local Audio
 # -------------------------------------------------------------
-wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav
+wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav
 chmod 644 /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
 chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
 
