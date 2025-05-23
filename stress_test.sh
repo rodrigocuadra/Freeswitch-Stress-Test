@@ -390,9 +390,9 @@ systemctl restart freeswitch
 ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 
 echo -e "\n\033[1;32m✅ Test complete. Results saved to data.csv\033[0m"
-# -------------------------------------------------------------
-# Summary Report
-# -------------------------------------------------------------
+echo -e " *****************************************************************************************************"
+echo -e " *                                         Summary Report                                            *"
+echo -e " *****************************************************************************************************"
 echo -e "\n\033[1;34mGenerating summary from data.csv...\033[0m"
 
 if [ -f data.csv ]; then
