@@ -78,8 +78,6 @@ fi
 # -------------------------------------------------------------
 echo -e "Creating local SIP gateway configuration..."
 
-wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav
-
 cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
 <gateway name="call-test-trk">
   <param name="proxy" value="$ip_remote:5080"/>
@@ -90,8 +88,22 @@ cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
 </gateway>
 EOF
 
-fs_cli -x 'reloadxml' >/dev/null
-fs_cli -x 'reload mod_sofia' >/dev/null
+# -------------------------------------------------------------
+# Create Extension 9600
+# -------------------------------------------------------------
+wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav
+
+cat <<EOF > /etc/freeswitch/dialplan/public/9600.xml
+<extension name="stress-test-9600">
+  <condition field="destination_number" expression="^9600$">
+    <action application="set" data="hangup_after_bridge=true"/>
+    <action application="answer"/>
+    <action application="sleep" data="500"/>
+    <action application="playback" data="sarah.wav"/>
+    <action application="bridge" data="sofia/gateway/call-test-trk/9500"/>
+  </condition>
+</extension>
+EOF
 
 # -------------------------------------------------------------
 # Create dialplan for extension 9500 on remote server
@@ -176,7 +188,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			if [ "$call_step" -lt $x ] ;then
 				exitstep=true
 			fi
-                fs_cli -x "originate {absolute_codec_string=PCMU,ignore_early_media=true}sofia/gateway/call-test-trk/9500 &playback(sarah.wav)" >/dev/null
+                fs_cli -x "originate {absolute_codec_string=PCMU,ignore_early_media=true}sofia/gateway/call-test-trk/9600 &park()" >/dev/null
                 sleep "$slepcall"
 		done
 		let step=step+1
