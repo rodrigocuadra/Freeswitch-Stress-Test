@@ -215,25 +215,35 @@ if [ -f data.csv ]; then
     BEGIN {
         max_cpu=0; sum_cpu=0; count=0;
         max_calls=0; sum_calls=0;
+        sum_bw_per_call=0;
     }
     {
         cpu = $3 + 0;
         calls = $2 + 0;
+        tx = $5 + 0;
+        rx = $6 + 0;
+        bw_per_call = (calls > 0) ? (tx + rx) / calls : 0;
+
         if(cpu > max_cpu) max_cpu = cpu;
         if(calls > max_calls) max_calls = calls;
+
         sum_cpu += cpu;
         sum_calls += calls;
+        sum_bw_per_call += bw_per_call;
         count++;
     }
     END {
         avg_cpu = (count > 0) ? sum_cpu / count : 0;
         avg_calls = (count > 0) ? sum_calls / count : 0;
+        avg_bw = (count > 0) ? sum_bw_per_call / count : 0;
         est_calls_per_hour = (dur > 0) ? max_calls * (3600 / dur) : 0;
+
         printf("\n📊 Summary:\n");
         printf("• Max CPU Usage.......: %.2f%%\n", max_cpu);
         printf("• Average CPU Usage...: %.2f%%\n", avg_cpu);
         printf("• Max Concurrent Calls: %d\n", max_calls);
         printf("• Average Calls/Step..: %.2f\n", avg_calls);
+        printf("• Average BW/Call.....: %.2f kb/s\n", avg_bw);
         printf("• ➕ Estimated Calls/hour (duration ~%ds): %.0f\n\n", dur, est_calls_per_hour);
     }'
 else
