@@ -347,7 +347,9 @@ exitcalls=false
 i=0
 step=0
 clear
+freeswitch_version=$(fs_cli -x version | grep -oP '\d+\.\d+\.\d+')
 echo -e " *****************************************************************************************************"
+echo -e "                           Freeswitch Version: ${freeswitch_version}                                   "
 echo -e "     Actual Test State (Step: "$call_step_seconds"s, Core: "$numcores", Protocol: SIP(Sofia), Codec: "$codec_name", Recording: "$recording")     "
 echo -e " *****************************************************************************************************"
 echo -e " -----------------------------------------------------------------------------------------------------"
