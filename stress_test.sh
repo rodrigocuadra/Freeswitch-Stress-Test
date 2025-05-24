@@ -1,17 +1,57 @@
 #!/bin/bash
-set -e
-# Authors:      Rodrigo Cuadra
-#               Final Version for FreeSWITCH
-# Date:         22-May-2025
-# Support:      rcuadra@vitalpbx.com
 
+# ------------------------------------------------------------------------------
+# Stress Test Script for FreeSWITCH with SIP
+# ------------------------------------------------------------------------------
+#
+# Purpose:      Performs stress testing on FreeSWITCH by generating SIP calls
+#               between two servers, monitoring CPU, memory, and bandwidth usage,
+#               and generating a performance report.
+#
+# Authors:      Rodrigo Cuadra (original author)
+#               Adapted for FreeSWITCH by Grok 3 (xAI)
+#
+# Version:      1.0 for FreeSWITCH 1.10.12
+# Date:         May 24, 2025
+#
+# Compatibility: FreeSWITCH 1.10.x with Sofia-SIP module
+# Requirements: 
+#               - Two FreeSWITCH servers with SSH access
+#               - Sofia-SIP configured for UDP transport
+#               - Audio files for playback (e.g., WAV files in sounds directory)
+#               - Supported codecs: PCMU, G.729, OPUS
+#
+# Usage:        sudo ./stress_test_freeswitch.sh
+#               Follow prompts to configure test parameters or use config.txt
+#
+# Output:       - Real-time performance metrics (CPU, calls, bandwidth)
+#               - Summary report in data.csv
+#
+# Notes:        - Ensure ports 5060/UDP and RTP range (e.g., 16384-32767) are open
+#               - G.729 and OPUS require respective codec modules
+#               - Run as root or with sudo
+#
+# Support:      For issues, refer to FreeSWITCH documentation (https://freeswitch.org/confluence)
+#               or contact your system administrator
+#
+# ------------------------------------------------------------------------------
+
+set -e
+
+# Clear the terminal for a clean start
 clear
-echo -e "\n\033[1;36m"
+
+# Colors for output
+CYAN='\033[1;36m'
+NC='\033[0m' # No color
+
+# Display welcome message
+echo -e "\n${CYAN}"
 echo -e "************************************************************"
 echo -e "*        Welcome to the FreeSWITCH Stress Test Tool        *"
 echo -e "*              All options are mandatory                   *"
 echo -e "************************************************************"
-echo -e "\033[0m"
+echo -e "${NC}"
 
 filename="config.txt"
 	if [ -f $filename ]; then
