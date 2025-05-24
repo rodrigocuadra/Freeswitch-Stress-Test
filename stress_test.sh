@@ -53,6 +53,7 @@ echo -e "*              All options are mandatory                   *"
 echo -e "************************************************************"
 echo -e "${NC}"
 
+# Read configuration from config.txt if it exists
 filename="config.txt"
 	if [ -f $filename ]; then
 		echo -e "config file"
