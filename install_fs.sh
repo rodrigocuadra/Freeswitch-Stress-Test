@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Author:      Rodrigo Cuadra
 # Date:        April-2025
 # Support:     rcuadra@aplitel.com
