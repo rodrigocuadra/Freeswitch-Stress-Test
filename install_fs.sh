@@ -427,6 +427,22 @@ for profile in /etc/freeswitch/sip_profiles/{internal,external}.xml; do
   fi
 done
 
+# Optimize FreeSWITCH capacity for high call volume
+echo -e "************************************************************"
+echo -e "* Increasing max sessions and sessions per second limits   *"
+echo -e "*    Useful for high traffic and stress testing.           *"
+echo -e "************************************************************"
+
+switch_core_conf="/usr/local/freeswitch/conf/autoload_configs/switch.conf.xml"
+
+if [ -f "$switch_core_conf" ]; then
+  sed -i 's|<param name="max-sessions" value="[^"]*"|<param name="max-sessions" value="10000"|' "$switch_core_conf"
+  sed -i 's|<param name="sessions-per-second" value="[^"]*"|<param name="sessions-per-second" value="300"|' "$switch_core_conf"
+  echo "✅ Updated limits in $switch_core_conf."
+else
+  echo "❌ File not found: $switch_core_conf"
+fi
+
 # DNS cashing
 echo -e "************************************************************"
 echo -e "*     Debian lacks DNS caching; Unbound provides           *"
