@@ -419,8 +419,8 @@ echo -e "************************************************************"
 
 for profile in /etc/freeswitch/sip_profiles/{internal,external}.xml; do
   if [ -f "$profile" ]; then
-    sed -i 's|<param name="ext-rtp-ip" value="\$\${external_rtp_ip}"|<param name="ext-rtp-ip" value="$$${internal_rtp_ip}"|' "$profile"
-    sed -i 's|<param name="ext-sip-ip" value="\$\${external_sip_ip}"|<param name="ext-sip-ip" value="$$${internal_sip_ip}"|' "$profile"
+    sed -i 's|<param name="ext-rtp-ip" value="\$\${external_rtp_ip}"|<param name="ext-rtp-ip" value="$${local_ip_v4}"|' "$profile"
+    sed -i 's|<param name="ext-sip-ip" value="\$\${external_sip_ip}"|<param name="ext-sip-ip" value="$${local_ip_v4}"|' "$profile"
     echo "✅ Updated ext-*-ip values in: $profile"
   else
     echo "❌ Profile not found: $profile"
