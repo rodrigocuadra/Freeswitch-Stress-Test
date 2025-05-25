@@ -338,6 +338,17 @@ else
 fi
 
 echo -e "************************************************************"
+echo -e "*     Disabling mod_signalwire in modules.conf.xml         *"
+echo -e "************************************************************"
+conf_file="/etc/freeswitch/autoload_configs/modules.conf.xml"
+if grep -q '<load module="mod_signalwire"/>' "$conf_file"; then
+    echo "🔧 Deshabilitando mod_signalwire..."
+    sed -i 's|<load module="mod_signalwire"/>|<!-- <load module="mod_signalwire"/> -->|' "$conf_file"
+else
+    echo "✅ mod_signalwire ya está deshabilitado o no existe en el archivo."
+fi
+
+echo -e "************************************************************"
 echo -e "*Change context from public to default in internal profiles*"
 echo -e "************************************************************"
 # Path to configuration file
