@@ -411,6 +411,22 @@ else
   echo "❌ The $switch_conf file does not exist."
 fi
 
+# Adjust SIP profiles to use internal IP instead of external for NAT environments
+echo -e "************************************************************"
+echo -e "*  Adjusting SIP profiles to use internal IP references.   *"
+echo -e "*  Ensures media and signaling stay within local network.  *"
+echo -e "************************************************************"
+
+for profile in /etc/freeswitch/sip_profiles/{internal,external}.xml; do
+  if [ -f "$profile" ]; then
+    sed -i 's|<param name="ext-rtp-ip" value="\$\${external_rtp_ip}"|<param name="ext-rtp-ip" value="$$${internal_rtp_ip}"|' "$profile"
+    sed -i 's|<param name="ext-sip-ip" value="\$\${external_sip_ip}"|<param name="ext-sip-ip" value="$$${internal_sip_ip}"|' "$profile"
+    echo "✅ Updated ext-*-ip values in: $profile"
+  else
+    echo "❌ Profile not found: $profile"
+  fi
+done
+
 # DNS cashing
 echo -e "************************************************************"
 echo -e "*     Debian lacks DNS caching; Unbound provides           *"
