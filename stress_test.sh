@@ -274,7 +274,7 @@ esac
 # -------------------------------------------------------------
 # Download Local Audio
 # -------------------------------------------------------------
-wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav  https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/jonathan.wav
+wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav  https://github.com/rodrigocuadra/Freeswitch-Stress-Test/raw/refs/heads/main/jonathan.wav
 chmod 644 /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
 chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
 
@@ -301,7 +301,7 @@ EOF'
 # -------------------------------------------------------------
 echo -e "Creating dialplan for 9500 on remote server..."
 
-ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav https://github.com/VitalPBX/VitalPBX-Stress-Test/raw/refs/heads/master/sarah.wav"
+ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav https://github.com/rodrigocuadra/Freeswitch-Stress-Test/raw/refs/heads/main/sarah.wav"
 ssh -p $ssh_remote_port root@$ip_remote "chmod 644 /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"
 ssh -p $ssh_remote_port root@$ip_remote "chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"
 
