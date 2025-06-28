@@ -119,7 +119,7 @@ filename="configst.txt"
 AUTO_MODE=false
 if [[ "$1" == "--auto" || "$1" == "--no-confirm" ]]; then
         AUTO_MODE=true
-        echo "✅ Auto mode enabled: running with config.txt only, no prompts."
+        echo "✅ Auto mode enabled: running with configst.txt only, no prompts."
 fi
 
 if [ "$AUTO_MODE" = false ]; then
