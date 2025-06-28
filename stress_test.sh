@@ -90,71 +90,78 @@ filename="configst.txt"
 				10)
 					call_duration=$line
   				;;
+      				11)
+					json_output_enabled=$line
+  				;;
                         esac
 			n=$((n+1))
 		done < $filename
-		echo -e "IP Local....................................... >  $ip_local"	
-		echo -e "IP Remote...................................... >  $ip_remote"
-		echo -e "SSH Remote Port (Default is 22)................ >  $ssh_remote_port"
-		echo -e "Network Interface name (ej: eth0).............. >  $interface_name"
-		echo -e "Codec (1.-PCMU, 2.-G279, 3.- OPUS)............. >  $codec"
-		echo -e "Recording Calls (yes,no)....................... >  $recording"
-		echo -e "Max CPU Load (Recommended 75%)................. >  $maxcpuload"
-		echo -e "Calls Step (Recommended 5-100)................. >  $call_step"
-		echo -e "Seconds between each step (Recommended 5-30)... >  $call_step_seconds"
-		echo -e "Estimated Call Duration Seconds (ej: 180)...... >  $call_duration"
+		echo -e "IP Local.............................................. >  $ip_local"	
+		echo -e "IP Remote............................................. >  $ip_remote"
+		echo -e "SSH Remote Port (Default is 22)....................... >  $ssh_remote_port"
+		echo -e "Network Interface name (ej: eth0)..................... >  $interface_name"
+		echo -e "Codec (1.-PCMU, 2.-G279, 3.- OPUS).................... >  $codec"
+		echo -e "Recording Calls (yes,no).............................. >  $recording"
+		echo -e "Max CPU Load (Recommended 75%)........................ >  $maxcpuload"
+		echo -e "Calls Step (Recommended 5-100)........................ >  $call_step"
+		echo -e "Seconds between each step (Recommended 5-30).......... >  $call_step_seconds"
+		echo -e "Estimated Call Duration Seconds (ej: 180)............. >  $call_duration"
+                echo -e "Enable JSON output for web visualization? (yes,no).... >  $json_output_enabled"
 
 	fi
 	
 	while [[ $ip_local == '' ]]
 	do
-    		read -p "IP Local....................................... > " ip_local 
+    		read -p "IP Local.......................................... > " ip_local 
 	done 
 
 	while [[ $ip_remote == '' ]]
 	do
-    		read -p "IP Remote...................................... > " ip_remote 
+    		read -p "IP Remote......................................... > " ip_remote 
 	done
 
 	while [[ $ssh_remote_port == '' ]]
 	do
-    		read -p "SSH Remote Port (Default is 22)................ > " ssh_remote_port 
+    		read -p "SSH Remote Port (Default is 22)................... > " ssh_remote_port 
 	done
 
 	while [[ $interface_name == '' ]]
 	do
-    		read -p "Network Interface name (ej: eth0).............. > " interface_name 
+    		read -p "Network Interface name (ej: eth0)................. > " interface_name 
 	done
 
 	while [[ $codec == '' ]]
 	do
-    		read -p "Codec (1.-PCMU, 2.-G79, 3.- OPUS).............. > " codec 
+    		read -p "Codec (1.-PCMU, 2.-G79, 3.- OPUS)................. > " codec 
 	done 
 
 	while [[ $recording == '' ]]
 	do
-    		read -p "Recording Calls (yes,no)....................... > " recording 
+    		read -p "Recording Calls (yes,no).......................... > " recording 
 	done 
 
 	while [[ $maxcpuload == '' ]]
 	do
-    		read -p "Max CPU Load (Recommended 75%)................. > " maxcpuload 
+    		read -p "Max CPU Load (Recommended 75%).................... > " maxcpuload 
 	done 
 
 	while [[ $call_step == '' ]]
 	do
-    		read -p "Calls Step (Recommended 5-100)................. > " call_step 
+    		read -p "Calls Step (Recommended 5-100).................... > " call_step 
 	done 
 
 	while [[ $call_step_seconds == '' ]]
 	do
-    		read -p "Seconds between each step (Recommended 5-30)... > " call_step_seconds
+    		read -p "Seconds between each step (Recommended 5-30)...... > " call_step_seconds
 	done 
 
  	while [[ $call_duration == '' ]]
 	do
-    		read -p "Estimated Call Duration Seconds (ej: 180)...... > " call_duration
+    		read -p "Estimated Call Duration Seconds (ej: 180)......... > " call_duration
 	done 
+        while [[ -z $json_output_enabled ]]; do
+            read -p "Enable JSON output for web visualization? (yes,no).... > " json_output_enabled
+        done
 
 echo -e "************************************************************"
 echo -e "*                   Check Information                      *"
@@ -172,53 +179,57 @@ echo -e "************************************************************"
 	else
 		while [[ $ip_local == '' ]]
 		do
-    			read -p "IP Local....................................... > " ip_local 
+    			read -p "IP Local.............................................. > " ip_local 
 		done 
 
 		while [[ $ip_remote == '' ]]
 		do
-    			read -p "IP Remote...................................... > " ip_remote 
+    			read -p "IP Remote............................................. > " ip_remote 
 		done
 
 		while [[ $ssh_remote_port == '' ]]
 		do
-    			read -p "SSH Remote Port (Default is 22)................. > " ssh_remote_port 
+    			read -p "SSH Remote Port (Default is 22)....................... > " ssh_remote_port 
 		done
 
 		while [[ $interface_name == '' ]]
 		do
-    			read -p "Network Interface name (ej: eth0).............. > " interface_name 
+    			read -p "Network Interface name (ej: eth0)..................... > " interface_name 
 		done
 
 		while [[ $codec == '' ]]
 		do
-    			read -p "Codec (1.-PCMU, 2.-G79, 3.- OPUS............... > " codec 
+    			read -p "Codec (1.-PCMU, 2.-G79, 3.- OPUS...................... > " codec 
 		done 
 
 		while [[ $recording == '' ]]
 		do
-    			read -p "Recording Calls (yes,no)....................... > " recording 
+    			read -p "Recording Calls (yes,no).............................. > " recording 
 		done 
 
 		while [[ $maxcpuload == '' ]]
 		do
-    			read -p "Max CPU Load (Recommended 75%).................. > " maxcpuload 
+    			read -p "Max CPU Load (Recommended 75%)........................ > " maxcpuload 
 		done 
 
 		while [[ $call_step == '' ]]
 		do
-    			read -p "Calls Step (Recommended 5-100)................. > " call_step 
+    			read -p "Calls Step (Recommended 5-100)........................ > " call_step 
 		done 
 
 		while [[ $call_step_seconds == '' ]]
 		do
-    			read -p "Seconds between each step (Recommended 5-30)... > " call_step_seconds
+    			read -p "Seconds between each step (Recommended 5-30).......... > " call_step_seconds
 		done 
   
 		while [[ $call_duration == '' ]]
 		do
-    			read -p "Estimated Call Duration Seconds (ej: 180)...... > " call_duration
+    			read -p "Estimated Call Duration Seconds (ej: 180)............. > " call_duration
 		done 
+               
+	        while [[ -z $json_output_enabled ]]; do
+                        read -p "Enable JSON output for web visualization? (yes,no).... > " json_output_enabled
+                done
          fi
 
 echo -e "$ip_local" 		> configst.txt
@@ -231,6 +242,7 @@ echo -e "$maxcpuload"     	>> configst.txt
 echo -e "$call_step" 		>> configst.txt
 echo -e "$call_step_seconds" 	>> configst.txt
 echo -e "$call_duration" 	>> configst.txt
+echo -e "$json_output_enabled"    >> config.txt
 
 # -------------------------------------------------------------
 # Copy SSH Key to Remote Server
@@ -393,7 +405,13 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			echo -e "\e[91m -----------------------------------------------------------------------------------------------------"
 		fi
 		printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
-                echo "$step,$i,$cpu,$load,$bwtx,$bwrx" >> data.csv
+                echo -e "$i, $activecalls, $cpu, $load, $memory, $bwtx, $bwrx, $seconds" >> data.csv
+
+                if [ "$json_output_enabled" = "yes" ]; then
+                    timestamp=$(date --iso-8601=seconds)
+                    echo "{\"step\": $step, \"calls\": $i, \"active_calls\": $activecalls, \"cpu\": $cpu, \"load\": \"$load\", \"memory\": \"$memory\", \"bw_tx\": $bwtx, \"bw_rx\": $bwrx, \"timestamp\": \"$timestamp\"}" >> /tmp/progress.jsonl
+                fi
+  
 		exitstep=false
 		x=1
 		while [ $exitstep = 'false' ]  
