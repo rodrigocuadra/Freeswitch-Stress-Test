@@ -53,7 +53,7 @@ echo -e "************************************************************"
 echo -e "${NC}"
 
 test_type="freeswitch"
-web_notify="yes"
+web_notify="no"
 progress_url="${web_notify_url_base}/api/progress"
 explosion_url="${web_notify_url_base}/api/explosion"
 
