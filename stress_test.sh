@@ -266,7 +266,9 @@ echo -e "$call_step" 		>> configst.txt
 echo -e "$call_step_seconds" 	>> configst.txt
 echo -e "$call_duration" 	>> configst.txt
 if [ "$web_notify" != "yes" ]; then
-    echo -e "$web_notify_url_base"    >> config.txt
+    echo -e "$web_notify_url_base"    >> configst.txt
+else
+    echo -e "None" 	              >> configst.txt  
 fi
 
 # -------------------------------------------------------------
