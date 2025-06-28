@@ -9,7 +9,6 @@
 #               and generating a performance report.
 #
 # Authors:      Rodrigo Cuadra (original author)
-#               Adapted for FreeSWITCH by Grok 3 (xAI)
 #
 # Version:      1.1 for FreeSWITCH 1.10.12
 # Date:         June 28, 2025
