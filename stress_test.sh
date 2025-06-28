@@ -109,7 +109,16 @@ filename="configst.txt"
                 echo -e "Web server URL base (e.g., http://192.168.5.5:8000)... >  $web_notify_url_base"
 
 	fi
-	
+
+ # Check for auto mode
+AUTO_MODE=false
+if [[ "$1" == "--auto" || "$1" == "--no-confirm" ]]; then
+        AUTO_MODE=true
+        echo "✅ Auto mode enabled: running with config.txt only, no prompts."
+fi
+
+if [ "$AUTO_MODE" = false ]; then
+
 	while [[ $ip_local == '' ]]
 	do
     		read -p "IP Local.......................................... > " ip_local 
@@ -163,10 +172,10 @@ filename="configst.txt"
             read -p "Web server URL base (e.g., http://192.168.5.5:8000)... > " web_notify_url_base
         done
 
-echo -e "************************************************************"
-echo -e "*                   Check Information                      *"
-echo -e "*        Make sure that both server have communication     *"
-echo -e "************************************************************"
+        echo -e "************************************************************"
+        echo -e "*                   Check Information                      *"
+        echo -e "*        Make sure that both server have communication     *"
+        echo -e "************************************************************"
 	while [[ $veryfy_info != yes && $veryfy_info != no ]]
 	do
     		read -p "Are you sure to continue with this settings? (yes,no) > " veryfy_info 
@@ -231,6 +240,9 @@ echo -e "************************************************************"
                         read -p "Web server URL base (e.g., http://192.168.5.5:8000)... > " web_notify_url_base
                 done
          fi
+else
+    echo "🚀 Skipping confirmation. Proceeding with loaded config."
+fi
 
 echo -e "$ip_local" 		> configst.txt
 echo -e "$ip_remote" 		>> configst.txt
