@@ -71,10 +71,6 @@ do
     esac
 done
 
-test_type="freeswitch"
-progress_url="${web_notify_url_base}/api/progress"
-explosion_url="${web_notify_url_base}/api/explosion"
-
 # Read configuration from config.txt if it exists
 filename="config.txt"
 	if [ -f $filename ]; then
@@ -280,6 +276,10 @@ if [ "$WEB_NOTIFY" = true ]; then
 else
     echo -e "None" 	              >> config.txt  
 fi
+
+test_type="freeswitch"
+progress_url="${web_notify_url_base}/api/progress"
+explosion_url="${web_notify_url_base}/api/explosion"
 
 # -------------------------------------------------------------
 # Copy SSH Key to Remote Server
