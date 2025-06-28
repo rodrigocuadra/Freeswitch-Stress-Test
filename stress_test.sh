@@ -11,8 +11,8 @@
 # Authors:      Rodrigo Cuadra (original author)
 #               Adapted for FreeSWITCH by Grok 3 (xAI)
 #
-# Version:      1.0 for FreeSWITCH 1.10.12
-# Date:         May 24, 2025
+# Version:      1.1 for FreeSWITCH 1.10.12
+# Date:         June 28, 2025
 #
 # Compatibility: FreeSWITCH 1.10.x with Sofia-SIP module
 # Requirements: 
