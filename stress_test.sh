@@ -91,7 +91,7 @@ filename="configst.txt"
 					call_duration=$line
   				;;
       				11)
-					json_output_enabled=$line
+					web_notify_url_base=$line
   				;;
                         esac
 			n=$((n+1))
@@ -106,7 +106,7 @@ filename="configst.txt"
 		echo -e "Calls Step (Recommended 5-100)........................ >  $call_step"
 		echo -e "Seconds between each step (Recommended 5-30).......... >  $call_step_seconds"
 		echo -e "Estimated Call Duration Seconds (ej: 180)............. >  $call_duration"
-                echo -e "Enable JSON output for web visualization? (yes,no).... >  $json_output_enabled"
+                echo -e "Web server URL base (e.g., http://192.168.5.5:8000)... >  $web_notify_url_base"
 
 	fi
 	
@@ -159,8 +159,8 @@ filename="configst.txt"
 	do
     		read -p "Estimated Call Duration Seconds (ej: 180)......... > " call_duration
 	done 
-        while [[ -z $json_output_enabled ]]; do
-            read -p "Enable JSON output for web visualization? (yes,no).... > " json_output_enabled
+        while [[ -z $web_notify_url_base ]]; do
+            read -p "Web server URL base (e.g., http://192.168.5.5:8000)... > " web_notify_url_base
         done
 
 echo -e "************************************************************"
@@ -227,8 +227,8 @@ echo -e "************************************************************"
     			read -p "Estimated Call Duration Seconds (ej: 180)............. > " call_duration
 		done 
                
-	        while [[ -z $json_output_enabled ]]; do
-                        read -p "Enable JSON output for web visualization? (yes,no).... > " json_output_enabled
+	        while [[ -z $web_notify_url_base ]]; do
+                        read -p "Web server URL base (e.g., http://192.168.5.5:8000)... > " web_notify_url_base
                 done
          fi
 
@@ -242,7 +242,9 @@ echo -e "$maxcpuload"     	>> configst.txt
 echo -e "$call_step" 		>> configst.txt
 echo -e "$call_step_seconds" 	>> configst.txt
 echo -e "$call_duration" 	>> configst.txt
-echo -e "$json_output_enabled"    >> config.txt
+echo -e "$web_notify_url_base"    >> config.txt
+
+test_type="freeswitch"
 
 # -------------------------------------------------------------
 # Copy SSH Key to Remote Server
