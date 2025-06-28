@@ -54,6 +54,14 @@ chmod +x install_fs.sh
 
 On the **controller server**, run:
 
+**API (Optional)**
+```bash
+wget https://raw.githubusercontent.com/rodrigocuadra/Freeswitch-Stress-Test/refs/heads/main/install_stresstest_api.sh
+chmod +x install_stresstest_api.sh
+./install_stresstest_api.sh
+```
+
+**Stress Test**
 ```bash
 wget https://raw.githubusercontent.com/rodrigocuadra/Freeswitch-Stress-Test/refs/heads/main/stress_test.sh
 chmod +x stress_test.sh
