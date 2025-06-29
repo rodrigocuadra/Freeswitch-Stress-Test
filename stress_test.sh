@@ -286,6 +286,21 @@ test_type="freeswitch"
 progress_url="${web_notify_url_base}/api/progress"
 explosion_url="${web_notify_url_base}/api/explosion"
 
+case "$codec" in
+  1)
+    codec_name="PCMU"
+    ;;
+  2)
+    codec_name="G729"
+    ;;
+  3)
+    codec_name="opus"
+    ;;
+  *)
+    codec_name="PCMU"
+    ;;
+esac
+
 if [ "$AUTO_MODE" = false ]; then
 # -------------------------------------------------------------
 # Copy SSH Key to Remote Server
@@ -310,21 +325,6 @@ else
     echo -e "❌ Failed to copy SSH key. You might need to check connectivity or credentials."
     exit 1
 fi
-
-case "$codec" in
-  1)
-    codec_name="PCMU"
-    ;;
-  2)
-    codec_name="G729"
-    ;;
-  3)
-    codec_name="opus"
-    ;;
-  *)
-    codec_name="PCMU"
-    ;;
-esac
 
 # -------------------------------------------------------------
 # Download Local Audio
@@ -381,7 +381,7 @@ sleep 5
 # -------------------------------------------------------------
 echo -e "Creating local SIP gateway configuration..."
 
-cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
+cat >> /etc/freeswitch/sip_profiles/external/call-test-trk.xml <<EOF
 <gateway name="call-test-trk">
   <param name="username" value="calltest"/>
   <param name="password" value="test123"/>
