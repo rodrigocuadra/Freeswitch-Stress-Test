@@ -286,116 +286,118 @@ test_type="freeswitch"
 progress_url="${web_notify_url_base}/api/progress"
 explosion_url="${web_notify_url_base}/api/explosion"
 
-# -------------------------------------------------------------
-# Copy SSH Key to Remote Server
-# -------------------------------------------------------------
-echo -e "************************************************************"
-echo -e "*          Copy Authorization key to remote server         *"
-echo -e "************************************************************"
+if [ "$AUTO_MODE" = false ]; then
+	# -------------------------------------------------------------
+	# Copy SSH Key to Remote Server
+	# -------------------------------------------------------------
+	echo -e "************************************************************"
+	echo -e "*          Copy Authorization key to remote server         *"
+	echo -e "************************************************************"
 
-sshKeyFile="/root/.ssh/id_rsa"
+	sshKeyFile="/root/.ssh/id_rsa"
 
-if [ ! -f "$sshKeyFile" ]; then
-    echo -e "Generating SSH key..."
-    ssh-keygen -f "$sshKeyFile" -t rsa -N '' >/dev/null
+	if [ ! -f "$sshKeyFile" ]; then
+	    echo -e "Generating SSH key..."
+	    ssh-keygen -f "$sshKeyFile" -t rsa -N '' >/dev/null
+	fi
+
+	echo -e "Copying public key to $ip_remote..."
+	ssh-copy-id -i "${sshKeyFile}.pub" -p "$ssh_remote_port" root@$ip_remote
+
+	if [ $? -eq 0 ]; then
+	    echo -e "*** SSH key installed successfully. ***"
+	else
+	    echo -e "❌ Failed to copy SSH key. You might need to check connectivity or credentials."
+	    exit 1
+	fi
+
+	case "$codec" in
+	  1)
+	    codec_name="PCMU"
+	    ;;
+	  2)
+	    codec_name="G729"
+	    ;;
+	  3)
+	    codec_name="opus"
+	    ;;
+	  *)
+	    codec_name="PCMU"
+	    ;;
+	esac
+
+	# -------------------------------------------------------------
+	# Download Local Audio
+	# -------------------------------------------------------------
+	wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav  https://github.com/rodrigocuadra/Freeswitch-Stress-Test/raw/refs/heads/main/jonathan.wav
+	chmod 644 /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
+	chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
+
+	# -------------------------------------------------------------
+	# Create SIP Account for Gateway Register
+	# -------------------------------------------------------------
+	echo -e "Create SIP Account for Gateway Register..."
+
+	ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/directory/default/calltest.xml
+	<include>
+	  <user id="calltest">
+	    <params>
+	      <param name="password" value="test123"/>
+	    </params>
+	    <variables>
+	      <variable name="user_context" value="default"/>
+	    </variables>
+	  </user>
+	</include>
+	EOF'
+
+	# -------------------------------------------------------------
+	# Create dialplan for extension 9500 on remote server
+	# -------------------------------------------------------------
+	echo -e "Creating dialplan for 9500 on remote server..."
+
+	ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav https://github.com/rodrigocuadra/Freeswitch-Stress-Test/raw/refs/heads/main/sarah.wav"
+	ssh -p $ssh_remote_port root@$ip_remote "chmod 644 /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"
+	ssh -p $ssh_remote_port root@$ip_remote "chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"
+
+	ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
+	<extension name="stress-test-remote">
+	  <condition field="destination_number" expression="^9500$">
+	    <action application="answer"/>
+	    <action application="playback" data="/usr/local/freeswitch/sounds/en/us/callie/sarah.wav" loops="3"/>
+	    <action application="sleep" data="1000"/>
+	  </condition>
+	</extension>
+	EOF'
+
+	echo -e " *******************************************************************************************"
+	echo -e " *                        Restarting Freeswitch in remote Server                           *"
+	echo -e " *******************************************************************************************"
+	ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
+	sleep 5
+
+	# -------------------------------------------------------------
+	# Create SIP Gateway to remote FreeSWITCH
+	# -------------------------------------------------------------
+	echo -e "Creating local SIP gateway configuration..."
+
+	cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
+	<gateway name="call-test-trk">
+	  <param name="username" value="calltest"/>
+	  <param name="password" value="test123"/>
+	  <param name="proxy" value="$ip_remote:5080"/>
+	  <param name="register" value="true"/>
+	  <param name="context" value="default"/>
+	</gateway>
+	EOF
+
+	echo -e " *******************************************************************************************"
+	echo -e " *                        Restarting Freeswitch in local Server                            *"
+	echo -e " *******************************************************************************************"
+	systemctl restart freeswitch
+	sleep 5
 fi
 
-echo -e "Copying public key to $ip_remote..."
-ssh-copy-id -i "${sshKeyFile}.pub" -p "$ssh_remote_port" root@$ip_remote
-
-if [ $? -eq 0 ]; then
-    echo -e "*** SSH key installed successfully. ***"
-else
-    echo -e "❌ Failed to copy SSH key. You might need to check connectivity or credentials."
-    exit 1
-fi
-
-case "$codec" in
-  1)
-    codec_name="PCMU"
-    ;;
-  2)
-    codec_name="G729"
-    ;;
-  3)
-    codec_name="opus"
-    ;;
-  *)
-    codec_name="PCMU"
-    ;;
-esac
-
-# -------------------------------------------------------------
-# Download Local Audio
-# -------------------------------------------------------------
-wget -O /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav  https://github.com/rodrigocuadra/Freeswitch-Stress-Test/raw/refs/heads/main/jonathan.wav
-chmod 644 /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
-chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/jonathan.wav
-
-# -------------------------------------------------------------
-# Create SIP Account for Gateway Register
-# -------------------------------------------------------------
-echo -e "Create SIP Account for Gateway Register..."
-
-ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/directory/default/calltest.xml
-<include>
-  <user id="calltest">
-    <params>
-      <param name="password" value="test123"/>
-    </params>
-    <variables>
-      <variable name="user_context" value="default"/>
-    </variables>
-  </user>
-</include>
-EOF'
-
-# -------------------------------------------------------------
-# Create dialplan for extension 9500 on remote server
-# -------------------------------------------------------------
-echo -e "Creating dialplan for 9500 on remote server..."
-
-ssh -p $ssh_remote_port root@$ip_remote "wget -O /usr/local/freeswitch/sounds/en/us/callie/sarah.wav https://github.com/rodrigocuadra/Freeswitch-Stress-Test/raw/refs/heads/main/sarah.wav"
-ssh -p $ssh_remote_port root@$ip_remote "chmod 644 /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"
-ssh -p $ssh_remote_port root@$ip_remote "chown freeswitch:freeswitch /usr/local/freeswitch/sounds/en/us/callie/sarah.wav"
-
-ssh -p "$ssh_remote_port" root@$ip_remote 'cat <<EOF > /etc/freeswitch/dialplan/public/9500.xml
-<extension name="stress-test-remote">
-  <condition field="destination_number" expression="^9500$">
-    <action application="answer"/>
-    <action application="playback" data="/usr/local/freeswitch/sounds/en/us/callie/sarah.wav" loops="3"/>
-    <action application="sleep" data="1000"/>
-  </condition>
-</extension>
-EOF'
-
-echo -e " *******************************************************************************************"
-echo -e " *                        Restarting Freeswitch in remote Server                           *"
-echo -e " *******************************************************************************************"
-ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
-sleep 5
-
-# -------------------------------------------------------------
-# Create SIP Gateway to remote FreeSWITCH
-# -------------------------------------------------------------
-echo -e "Creating local SIP gateway configuration..."
-
-cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
-<gateway name="call-test-trk">
-  <param name="username" value="calltest"/>
-  <param name="password" value="test123"/>
-  <param name="proxy" value="$ip_remote:5080"/>
-  <param name="register" value="true"/>
-  <param name="context" value="default"/>
-</gateway>
-EOF
-
-echo -e " *******************************************************************************************"
-echo -e " *                        Restarting Freeswitch in local Server                            *"
-echo -e " *******************************************************************************************"
-systemctl restart freeswitch
-
-sleep 5
 numcores=`nproc --all`
 exitcalls=false
 i=0
