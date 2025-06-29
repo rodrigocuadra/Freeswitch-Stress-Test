@@ -455,7 +455,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
                 echo -e "$i, $activecalls, $cpu, $load, $memory, $bwtx, $bwrx, $seconds" >> data.csv
 
                 if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
-                    curl -X POST "$progress_url" \
+                    curl -s -X POST "$progress_url" \
                         -H "Content-Type: application/json" \
                         -d "{
                         \"test_type\": \"$test_type\",
@@ -470,7 +470,6 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
                         \"bw_rx\": $bwrx,
                         \"timestamp\": \"$(date --iso-8601=seconds)\"
                         }" > /dev/null &
-			echo "📤 Explosion request sent for $test_type (CPU: $cpu%, Active Calls: $activecalls)"
                 fi
   
 		exitstep=false
@@ -500,7 +499,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 			exitcalls=true
                         if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
                             echo "🔥 Threshold reached ($cpu%). Notifying control server..."
-                            curl -s -X POST "$explosion_url" \
+                            curl -X POST "$explosion_url" \
                                 -H "Content-Type: application/json" \
                                 -d "{
                                 \"test_type\": \"$test_type\",
@@ -510,6 +509,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
                                 \"step\": $step,
                                 \"timestamp\": \"$(date --iso-8601=seconds)\"
                                 }" > /dev/null &
+				echo "📤 Explosion request sent for $test_type (CPU: $cpu%, Active Calls: $activecalls)"
                         fi
    		fi
 		R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
