@@ -390,13 +390,13 @@ cat <<EOF > /etc/freeswitch/sip_profiles/external/call-test-trk.xml
   <param name="context" value="default"/>
 </gateway>
 EOF
+fi
 
 echo -e " *******************************************************************************************"
 echo -e " *                        Restarting Freeswitch in local Server                            *"
 echo -e " *******************************************************************************************"
 systemctl restart freeswitch
 sleep 5
-fi
 
 echo -e "*****************************************************************************************"
 echo -e "*                                  Start stress test                                    *"
