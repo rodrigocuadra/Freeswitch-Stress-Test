@@ -286,6 +286,7 @@ test_type="freeswitch"
 progress_url="${web_notify_url_base}/api/progress"
 explosion_url="${web_notify_url_base}/api/explosion"
 
+if [ "$AUTO_MODE" = false ]; then
 # -------------------------------------------------------------
 # Copy SSH Key to Remote Server
 # -------------------------------------------------------------
@@ -394,8 +395,12 @@ echo -e " **********************************************************************
 echo -e " *                        Restarting Freeswitch in local Server                            *"
 echo -e " *******************************************************************************************"
 systemctl restart freeswitch
-
 sleep 5
+fi
+
+echo -e "*****************************************************************************************"
+echo -e "*                                  Start stress test                                    *"
+echo -e "*****************************************************************************************"
 numcores=`nproc --all`
 exitcalls=false
 i=0
