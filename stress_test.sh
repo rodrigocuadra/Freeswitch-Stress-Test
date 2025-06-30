@@ -505,7 +505,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
                                 \"test_type\": \"$test_type\",
                                 \"ip\": \"$ip_local\",
                                 \"cpu\": $cpu,
-                                \"calls\": $activecalls,
+                                \"active_calls\": $activecalls,
                                 \"step\": $step,
                                 \"timestamp\": \"$(date --iso-8601=seconds)\"
                                 }" > /dev/null &
