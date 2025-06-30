@@ -498,7 +498,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
 		if [ "$cpu" -gt "$maxcpuload" ] ;then
 			exitcalls=true
                         if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
-                            echo "🔥 Threshold reached ($cpu%). Notifying control server..."
+                            # echo "🔥 Threshold reached ($cpu%). Notifying control server..."
                             curl -X POST "$explosion_url" \
                                 -H "Content-Type: application/json" \
                                 -d "{
@@ -509,7 +509,7 @@ echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
                                 \"step\": $step,
                                 \"timestamp\": \"$(date --iso-8601=seconds)\"
                                 }" > /dev/null &
-				echo "📤 Explosion request sent for $test_type (CPU: $cpu%, Active Calls: $activecalls)"
+				# echo "📤 Explosion request sent for $test_type (CPU: $cpu%, Active Calls: $activecalls)"
                         fi
    		fi
 		R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
