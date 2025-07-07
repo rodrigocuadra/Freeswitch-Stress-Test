@@ -469,7 +469,7 @@ while [ "$exitcalls" = "false" ]; do
                 \"cpu\": $cpu,
                 \"load\": \"$load\",
                 \"memory\": \"$memory\",
-		\"avg_elapsed\": \"$avg_elapsed\",
+		\"total_elapsed\": \"$total_elapsed\",
                 \"bw_tx\": $bwtx,
                 \"bw_rx\": $bwrx,
                 \"timestamp\": \"$(date --iso-8601=seconds)\"
@@ -559,7 +559,7 @@ if [ -f data.csv ]; then
         calls = $2 + 0;
         tx = $6 + 0;
         rx = $7 + 0;
-        avg_elapsed = $8 + 0;
+        elapsed = $8 + 0;
 
         # Bandwidth per call (includes both legs: TX + RX)
         bw_per_call = (calls > 0) ? (tx + rx) / calls : 0;
