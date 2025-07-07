@@ -419,7 +419,7 @@ T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
 date1=$(date +"%s")
 slepcall=$(printf %.2f "$((1000000000 * call_step_seconds / call_step))e-9")
 sleep 1
-echo -e "calls, active calls, cpu load (%), memory (%), bwtx (kb/s), bwrx(kb/s), interval(seg)" > data.csv
+echo -e "calls, active calls, cpu load (%), memory (%), bwtx (kb/s), bwrx (kb/s), interval (seg), Delay (ms)" > data.csv
 
 while [ "$exitcalls" = "false" ]; do
     R2=$(cat /sys/class/net/"$interface_name"/statistics/rx_bytes)
