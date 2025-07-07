@@ -464,11 +464,11 @@ while [ "$exitcalls" = "false" ]; do
 
     # Color-code output based on CPU load
     if [ "$cpu" -le 34 ]; then
-        echo -e "\e[92m---------------------------------------------------------------------------------------------------"
+        echo -e "\e[92m  ---------------------------------------------------------------------------------------------------"
     elif [ "$cpu" -ge 35 ] && [ "$cpu" -lt 65 ]; then
-        echo -e "\e[93m---------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ---------------------------------------------------------------------------------------------------"
     else
-        echo -e "\e[91m---------------------------------------------------------------------------------------------------"
+        echo -e "\e[91m  ---------------------------------------------------------------------------------------------------"
     fi
     printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
     echo -e "$i, $activecalls, $cpu, $load, $memory, $bwtx, $bwrx, $total_elapsed" >> data.csv
@@ -552,8 +552,25 @@ echo -e " **********************************************************************
 echo -e " *                                      Restarting Freeswitch                                        *"
 echo -e " *****************************************************************************************************"
 systemctl restart freeswitch
+for i in {1..15}; do
+    if fs_cli -x "status" &>/dev/null; then
+        echo "✅ FreeSWITCH está operativo localmente"
+        break
+    else
+        echo "⏳ Esperando que FreeSWITCH levante... ($i/15)"
+        sleep 1
+    fi
+done
 ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
-
+for i in {1..15}; do
+    if ssh -p $ssh_remote_port root@$ip_remote "fs_cli -x 'status' &>/dev/null"; then
+        echo "✅ FreeSWITCH está operativo en $ip_remote"
+        break
+    else
+        echo "⏳ Esperando que FreeSWITCH se levante... ($i/15)"
+        sleep 1
+    fi
+done
 
 echo -e "\n\033[1;32m✅ Test complete. Results saved to data.csv\033[0m"
 echo -e "***************************************************************************************************"
@@ -597,12 +614,12 @@ if [ -f data.csv ]; then
         avg_delay_per_call = (total_batch_delay > 0) ? total_batch_delay / max_calls : 0;
 
         printf("\n📊 Summary:\n");
-        printf("• Max CPU Usage.............: %.2f%%\n", max_cpu);
-        printf("• Average CPU Usage.........: %.2f%%\n", avg_cpu);
-        printf("• Max Concurrent Calls......: %d\n", max_calls);
-        printf("• Average Bandwidth/Call....: %.2f kb/s (TX + RX)\n", avg_bw);
-        printf("• ⏱️ Total Originate Delay...: %.0f ms\n", total_batch_delay);
-        printf("• ⌛ Avg Delay per Call......: %.2f ms\n", avg_delay_per_call);
+        printf("• Max CPU Usage..................: %.2f%%\n", max_cpu);
+        printf("• Average CPU Usage..............: %.2f%%\n", avg_cpu);
+        printf("• Max Concurrent Calls...........: %d\n", max_calls);
+        printf("• Average Bandwidth/Call.........: %.2f kb/s (TX + RX)\n", avg_bw);
+        printf("• ⏱️ Total Originate Delay........: %.0f ms\n", total_batch_delay);
+        printf("• ⌛ Avg Delay per Call..........: %.2f ms\n", avg_delay_per_call);
 	printf("• ➕ Estimated Calls/Hour (~%ds): %.0f\n", dur, est_calls_per_hour);
     }'
 
