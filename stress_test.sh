@@ -530,11 +530,12 @@ echo -e " **********************************************************************
 systemctl restart freeswitch
 ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 
+
 echo -e "\n\033[1;32m✅ Test complete. Results saved to data.csv\033[0m"
-echo -e " *****************************************************************************************************"
-echo -e " *                                         Summary Report                                            *"
-echo -e " *****************************************************************************************************"
-echo -e "\n\033[1;34mGenerating summary from data.csv...\033[0m"
+echo -e "***************************************************************************************************"
+echo -e "*                                     Summary Report                                              *"
+echo -e "***************************************************************************************************"
+echo -e "\n${BLUE}Generating summary from data.csv...${NC}"
 
 if [ -f data.csv ]; then
     tail -n +2 data.csv | awk -F',' -v dur="$call_duration" '
@@ -542,7 +543,6 @@ if [ -f data.csv ]; then
         max_cpu=0; sum_cpu=0; count=0;
         max_calls=0; sum_calls=0;
         sum_bw_per_call=0;
-
         total_batch_delay = 0;
         total_calls = 0;
     }
@@ -551,8 +551,9 @@ if [ -f data.csv ]; then
         calls = $2 + 0;
         tx = $5 + 0;
         rx = $6 + 0;
-	avg_elapsed = $9 + 0;
- 
+        avg_elapsed = $9 + 0;
+
+        # Bandwidth per call (includes both legs: TX + RX)
         bw_per_call = (calls > 0) ? (tx + rx) / calls : 0;
 
         if(cpu > max_cpu) max_cpu = cpu;
@@ -561,26 +562,25 @@ if [ -f data.csv ]; then
         sum_cpu += cpu;
         sum_calls += calls;
         sum_bw_per_call += bw_per_call;
-        count++;
-
         total_batch_delay += avg_elapsed * calls_per_step;
         total_calls += calls_per_step;
+        count++;
     }
     END {
         avg_cpu = (count > 0) ? sum_cpu / count : 0;
         avg_calls = (count > 0) ? sum_calls / count : 0;
         avg_bw = (count > 0) ? sum_bw_per_call / count : 0;
         est_calls_per_hour = (dur > 0) ? max_calls * (3600 / dur) : 0;
-	avg_delay_per_call = (total_calls > 0) ? total_batch_delay / total_calls :
+        avg_delay_per_call = (total_calls > 0) ? total_batch_delay / total_calls : 0;
 
         printf("\n📊 Summary:\n");
-        printf("• Max CPU Usage.......: %.2f%%\n", max_cpu);
-        printf("• Average CPU Usage...: %.2f%%\n", avg_cpu);
-        printf("• Max Concurrent Calls: %d\n", max_calls);
-        printf("• Average Calls/Step..: %.2f\n", avg_calls);
-        printf("• Average BW/Call.....: %.2f kb/s\n", avg_bw);
-        printf("• ➕ Estimated Calls/hour (duration ~%ds): %.0f\n", dur, est_calls_per_hour);
-	printf("• ⏱️ Total Originate Delay...: %.0f ms\n", total_batch_delay);
+        printf("• Max CPU Usage.............: %.2f%%\n", max_cpu);
+        printf("• Average CPU Usage.........: %.2f%%\n", avg_cpu);
+        printf("• Max Concurrent Calls......: %d\n", max_calls);
+        printf("• Average Calls per Step....: %.2f\n", avg_calls);
+        printf("• Average Bandwidth/Call....: %.2f kb/s (TX + RX)\n", avg_bw);
+        printf("• ➕ Estimated Calls/Hour (~%ds): %.0f\n", dur, est_calls_per_hour);
+        printf("• ⏱️ Total Originate Delay...: %.0f ms\n", total_batch_delay);
         printf("• ⌛ Avg Delay per Call......: %.2f ms\n", avg_delay_per_call);
     }'
 
