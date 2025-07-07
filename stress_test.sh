@@ -443,14 +443,16 @@ while [ "$exitcalls" = "false" ]; do
     memory=$(free | awk '/Mem:/ {used=$3; total=$2} END {if (total>0) printf("%.2f%%", used/total*100); else print "N/A"}')
 
     # Color-code output based on CPU load
-    if [ "$cpu" -le 34 ]; then
-        echo -e "\e[92m---------------------------------------------------------------------------------------------------"
-    elif [ "$cpu" -ge 35 ] && [ "$cpu" -lt 65 ]; then
-        echo -e "\e[93m---------------------------------------------------------------------------------------------------"
-    else
-        echo -e "\e[91m---------------------------------------------------------------------------------------------------"
+    if [ "$cpu" -le 34 ] ;then
+        echo -e "\e[92m -----------------------------------------------------------------------------------------------------"
     fi
-    printf "%2s %7s %10s %19s %10s %10s %10s %12s %12s\n" "|" " $step |" "$i |" "$activecalls |" "$cpu% |" "$load |" "$memory |" "$bwtx |" "$bwrx |"
+    if [ "$cpu" -ge 35 ] && [ "$cpu" -lt 65 ] ;then
+        echo -e "\e[93m -----------------------------------------------------------------------------------------------------"
+    fi
+    if [ "$cpu" -ge 65 ] ;then
+        echo -e "\e[91m -----------------------------------------------------------------------------------------------------"
+    fi
+    printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
     echo -e "$i, $activecalls, $cpu, $load, $memory, $bwtx, $bwrx, $seconds, $avg_elapsed" >> data.csv
 
     if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
