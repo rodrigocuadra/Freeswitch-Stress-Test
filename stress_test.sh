@@ -405,7 +405,7 @@ numcores=`nproc --all`
 exitcalls=false
 i=0
 step=0
-avg_elapsed=0
+total_elapsed=0
 clear
 freeswitch_version=$(fs_cli -x version | grep -oP '\d+\.\d+\.\d+')
 echo -e " *****************************************************************************************************"
@@ -417,9 +417,11 @@ printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " Step |" "Calls |" "F
 R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
 T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
 date1=$(date +"%s")
-slepcall=$(printf %.2f "$((1000000000 * call_step_seconds / call_step))e-9")
+# slepcall=$(printf %.2f "$((1000000000 * call_step_seconds / call_step))e-9")
+# Convert call_step_seconds to milliseconds
+target_ms=$((call_step_seconds * 1000))
 sleep 1
-echo -e "Step, calls, active calls, cpu load (%), memory (%), bwtx (kb/s), bwrx (kb/s), interval (seg), Delay (ms)" > data.csv
+echo -e "step, calls, active calls, cpu load (%), memory (%), bwtx (kb/s), bwrx (kb/s), delay (ms)" > data.csv
 
 while [ "$exitcalls" = "false" ]; do
     R2=$(cat /sys/class/net/"$interface_name"/statistics/rx_bytes)
@@ -453,8 +455,8 @@ while [ "$exitcalls" = "false" ]; do
         echo -e "\e[91m -----------------------------------------------------------------------------------------------------"
     fi
     printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
-    echo -e "$i, $activecalls, $cpu, $load, $memory, $bwtx, $bwrx, $seconds, $avg_elapsed" >> data.csv
-
+    echo -e "$i, $activecalls, $cpu, $load, $memory, $bwtx, $bwrx, $total_elapsed" >> data.csv
+    
     if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
         curl --silent --output /dev/null --write-out '' -X POST "$progress_url" \
             -H "Content-Type: application/json" \
@@ -496,9 +498,15 @@ while [ "$exitcalls" = "false" ]; do
 	call_end=$(date +%s%3N)
         call_elapsed=$((call_end - call_start))
         total_elapsed=$((total_elapsed + call_elapsed))
-        sleep "$slepcall"
     done
-    avg_elapsed=$((total_elapsed / call_step))
+
+    # Calculate how much sleep you need if necessary
+    if [ "$batch_elapsed_ms" -lt "$target_ms" ]; then
+        sleep_ms=$((target_ms - batch_elapsed_ms))
+        sleep_sec=$(awk "BEGIN { printf(\"%.3f\", $sleep_ms / 1000) }")
+        sleep "$sleep_sec"
+    fi
+    
     let step=step+1
     let i=i+"$call_step"
     if [ "$cpu" -gt "$maxcpuload" ] ;then
@@ -552,7 +560,7 @@ if [ -f data.csv ]; then
         calls = $2 + 0;
         tx = $6 + 0;
         rx = $7 + 0;
-        avg_elapsed = $9 + 0;
+        avg_elapsed = $8 + 0;
 
         # Bandwidth per call (includes both legs: TX + RX)
         bw_per_call = (calls > 0) ? (tx + rx) / calls : 0;
@@ -563,7 +571,7 @@ if [ -f data.csv ]; then
         sum_cpu += cpu;
         sum_calls += calls;
         sum_bw_per_call += bw_per_call;
-        total_batch_delay = total_batch_delay + (avg_elapsed * calls);
+        total_batch_delay = total_batch_delay + elapsed;
         count++;
     }
     END {
@@ -571,13 +579,12 @@ if [ -f data.csv ]; then
         avg_calls = (count > 0) ? sum_calls / count : 0;
         avg_bw = (count > 0) ? sum_bw_per_call / count : 0;
         est_calls_per_hour = (dur > 0) ? max_calls * (3600 / dur) : 0;
-        avg_delay_per_call = (total_calls > 0) ? total_batch_delay / count : 0;
+        avg_delay_per_call = (total_batch_delay > 0) ? total_batch_delay / max_calls : 0;
 
         printf("\n📊 Summary:\n");
         printf("• Max CPU Usage.............: %.2f%%\n", max_cpu);
         printf("• Average CPU Usage.........: %.2f%%\n", avg_cpu);
         printf("• Max Concurrent Calls......: %d\n", max_calls);
-        printf("• Average Calls per Step....: %.2f\n", avg_calls);
         printf("• Average Bandwidth/Call....: %.2f kb/s (TX + RX)\n", avg_bw);
         printf("• ⏱️ Total Originate Delay...: %.0f ms\n", total_batch_delay);
         printf("• ⌛ Avg Delay per Call......: %.2f ms\n", avg_delay_per_call);
