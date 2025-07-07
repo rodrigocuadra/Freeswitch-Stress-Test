@@ -374,7 +374,16 @@ echo -e " **********************************************************************
 echo -e " *                        Restarting Freeswitch in remote Server                           *"
 echo -e " *******************************************************************************************"
 ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
-sleep 5
+for i in {1..15}; do
+    if ssh -p $ssh_remote_port root@$ip_remote "fs_cli -x 'status' &>/dev/null"; then
+        echo "✅ FreeSWITCH está operativo en $ip_remote"
+        break
+    else
+        echo "⏳ Esperando que FreeSWITCH se levante... ($i/15)"
+        sleep 1
+    fi
+done
+#sleep 5
 
 # -------------------------------------------------------------
 # Create SIP Gateway to remote FreeSWITCH
@@ -396,7 +405,16 @@ echo -e " **********************************************************************
 echo -e " *                        Restarting Freeswitch in local Server                            *"
 echo -e " *******************************************************************************************"
 systemctl restart freeswitch
-sleep 5
+for i in {1..15}; do
+    if fs_cli -x "status" &>/dev/null; then
+        echo "✅ FreeSWITCH está operativo localmente"
+        break
+    else
+        echo "⏳ Esperando que FreeSWITCH levante... ($i/15)"
+        sleep 1
+    fi
+done
+#sleep 5
 
 echo -e "*****************************************************************************************"
 echo -e "*                                  Start stress test                                    *"
