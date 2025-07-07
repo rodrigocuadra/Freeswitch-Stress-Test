@@ -418,105 +418,103 @@ T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
 date1=$(date +"%s")
 slepcall=$(printf %.2f "$((1000000000 * call_step_seconds / call_step))e-9")
 sleep 1
-#echo -e "calls, active calls, cpu load (%), memory (%), bwtx (kb/s), bwrx(kb/s), interval(seg)" 	> data.csv
-echo "step,calls,cpu(%),load,tx(kb/s),rx(kb/s)" > data.csv
-	while [ $exitcalls = 'false' ]        
-        do
-     		R2=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
-       		T2=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
-		date2=$(date +"%s")
-		diff=$(($date2-$date1))
-		seconds="$(($diff % 60))"
-		T2=`expr $T2 + 128`
-		R2=`expr $R2 + 128`
-        	TBPS=`expr $T2 - $T1`
-        	RBPS=`expr $R2 - $R1`
-        	TKBPS=`expr $TBPS / 128`
-        	RKBPS=`expr $RBPS / 128`
-		bwtx="$((TKBPS/seconds))"
-		bwrx="$((RKBPS/seconds))"
-                activecalls=$(fs_cli -x "show channels count" | grep total | awk '{print $1}')
-  		load=`cat /proc/loadavg | awk '{print $0}' | cut -d " " -f 1`
-                cpu=`top -n 1 | awk 'FNR > 7 {s+=$10} END {print s}'`
-                cpuint=${cpu%.*}
-                cpu="$((cpuint/numcores))"
-		# memory=`free | awk '/Mem/{printf("%.2f%"), $3/$2*100} /buffers\/cache/{printf(", buffers: %.2f%"), $4/($3+$4)*100}'`
-                memory=$(free | awk '/Mem:/ {used=$3; total=$2} END {if (total>0) printf("%.2f%%", used/total*100); else print "N/A"}')
-		if [ "$cpu" -le 34 ] ;then
-			echo -e "\e[92m -----------------------------------------------------------------------------------------------------"
-		fi
-		if [ "$cpu" -ge 35 ] && [ "$cpu" -lt 65 ] ;then
-			echo -e "\e[93m -----------------------------------------------------------------------------------------------------"
-		fi
-		if [ "$cpu" -ge 65 ] ;then
-			echo -e "\e[91m -----------------------------------------------------------------------------------------------------"
-		fi
-		printf "%2s %7s %10s %21s %10s %10s %10s %12s %12s\n" "|" " "$step" |" ""$i" |" ""$activecalls" |" ""$cpu"% |" ""$load" |" ""$memory" |" ""$bwtx" |" ""$bwrx" |"
-                echo -e "$i, $activecalls, $cpu, $load, $memory, $bwtx, $bwrx, $seconds" >> data.csv
+echo -e "calls, active calls, cpu load (%), memory (%), bwtx (kb/s), bwrx(kb/s), interval(seg)" > data.csv
 
-                if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
-                    curl -s -X POST "$progress_url" \
-                        -H "Content-Type: application/json" \
-                        -d "{
-                        \"test_type\": \"$test_type\",
-                        \"ip\": \"$ip_local\",
-                        \"step\": $step,
-                        \"calls\": $i,
-                        \"active_calls\": $activecalls,
-                        \"cpu\": $cpu,
-                        \"load\": \"$load\",
-                        \"memory\": \"$memory\",
-                        \"bw_tx\": $bwtx,
-                        \"bw_rx\": $bwrx,
-                        \"timestamp\": \"$(date --iso-8601=seconds)\"
-                        }" > /dev/null &
-                fi
+while [ "$exitcalls" = "false" ]; do
+    R2=$(cat /sys/class/net/"$interface_name"/statistics/rx_bytes)
+    T2=$(cat /sys/class/net/"$interface_name"/statistics/tx_bytes)
+    date2=$(date +"%s")
+    diff=$((date2 - date1))
+    seconds=$((diff % 60))
+    T2=$((T2 + 128))
+    R2=$((R2 + 128))
+    TBPS=$((T2 - T1))
+    RBPS=$((R2 - R1))
+    TKBPS=$((TBPS / 128))
+    RKBPS=$((RBPS / 128))
+    bwtx=$((TKBPS / seconds))
+    bwrx=$((RKBPS / seconds))
+    activecalls=$(asterisk -rx "core show calls" | grep "active" | cut -d' ' -f1)
+    load=$(cat /proc/loadavg | awk '{print $1}')
+    cpu=`top -n 1 | awk 'FNR > 7 {s+=$10} END {print s}'`
+    cpuint=${cpu%.*}
+    cpu="$((cpuint/numcores))"
+    memory=$(free | awk '/Mem:/ {used=$3; total=$2} END {if (total>0) printf("%.2f%%", used/total*100); else print "N/A"}')
+
+    # Color-code output based on CPU load
+    if [ "$cpu" -le 34 ]; then
+        echo -e "\e[92m---------------------------------------------------------------------------------------------------"
+    elif [ "$cpu" -ge 35 ] && [ "$cpu" -lt 65 ]; then
+        echo -e "\e[93m---------------------------------------------------------------------------------------------------"
+    else
+        echo -e "\e[91m---------------------------------------------------------------------------------------------------"
+    fi
+    printf "%2s %7s %10s %19s %10s %10s %10s %12s %12s\n" "|" " $step |" "$i |" "$activecalls |" "$cpu% |" "$load |" "$memory |" "$bwtx |" "$bwrx |"
+    echo -e "$i, $activecalls, $cpu, $load, $memory, $bwtx, $bwrx, $seconds" >> data.csv
+
+    if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
+        curl -s -X POST "$progress_url" \
+            -H "Content-Type: application/json" \
+            -d "{
+                \"test_type\": \"$test_type\",
+                \"ip\": \"$ip_local\",
+                \"step\": $step,
+                \"calls\": $i,
+                \"active_calls\": $activecalls,
+                \"cpu\": $cpu,
+                \"load\": \"$load\",
+                \"memory\": \"$memory\",
+                \"bw_tx\": $bwtx,
+                \"bw_rx\": $bwrx,
+                \"timestamp\": \"$(date --iso-8601=seconds)\"
+            }" > /dev/null &
+    fi
   
-		exitstep=false
-		x=1
-		while [ $exitstep = 'false' ]  
-        	do
-			let x=x+1
-			if [ "$call_step" -lt $x ] ;then
-				exitstep=true
-			fi
+    exitstep=false
+    x=1
+    while [ $exitstep = 'false' ] ; do
+        let x=x+1
+	if [ "$call_step" -lt $x ] ;then
+	    exitstep=true
+	fi
    
-			base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
-                        if [ "$recording" = "yes" ]; then
-                            timestamp=$(date +%s%N)
-                            recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
-			    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
-                        else
-                            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
-                        fi
-                        fs_cli -x "originate $originate_string" >/dev/null 2>&1
+	base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
+        if [ "$recording" = "yes" ]; then
+            timestamp=$(date +%s%N)
+            recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
+	    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
+        else
+            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
+        fi
+        fs_cli -x "originate $originate_string" >/dev/null 2>&1
+	
+        sleep "$slepcall"
+    done
+    let step=step+1
+    let i=i+"$call_step"
+    if [ "$cpu" -gt "$maxcpuload" ] ;then
+        exitcalls=true
+        if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
+            # echo "🔥 Threshold reached ($cpu%). Notifying control server..."
+            curl -X POST "$explosion_url" \
+                 -H "Content-Type: application/json" \
+                 -d "{
+                 \"test_type\": \"$test_type\",
+                 \"ip\": \"$ip_local\",
+                 \"cpu\": $cpu,
+                 \"active_calls\": $activecalls,
+                 \"step\": $step,
+                 \"timestamp\": \"$(date --iso-8601=seconds)\"
+                 }" > /dev/null &
+ 	         # echo "📤 Explosion request sent for $test_type (CPU: $cpu%, Active Calls: $activecalls)"
+        fi
+    fi
+    R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
+    T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
+    date1=$(date +"%s")
+    sleep 1
+done
 
-	        sleep "$slepcall"
-		done
-		let step=step+1
-		let i=i+"$call_step"
-		if [ "$cpu" -gt "$maxcpuload" ] ;then
-			exitcalls=true
-                        if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
-                            # echo "🔥 Threshold reached ($cpu%). Notifying control server..."
-                            curl -X POST "$explosion_url" \
-                                -H "Content-Type: application/json" \
-                                -d "{
-                                \"test_type\": \"$test_type\",
-                                \"ip\": \"$ip_local\",
-                                \"cpu\": $cpu,
-                                \"active_calls\": $activecalls,
-                                \"step\": $step,
-                                \"timestamp\": \"$(date --iso-8601=seconds)\"
-                                }" > /dev/null &
-				# echo "📤 Explosion request sent for $test_type (CPU: $cpu%, Active Calls: $activecalls)"
-                        fi
-   		fi
-		R1=`cat /sys/class/net/"$interface_name"/statistics/rx_bytes`
-		T1=`cat /sys/class/net/"$interface_name"/statistics/tx_bytes`
-		date1=$(date +"%s")
-		sleep 1
-	done
 echo -e "\e[39m -----------------------------------------------------------------------------------------------------"
 echo -e " *****************************************************************************************************"
 echo -e " *                                      Restarting Freeswitch                                        *"
