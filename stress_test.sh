@@ -479,7 +479,6 @@ while [ "$exitcalls" = "false" ]; do
     exitstep=false
     x=1
     total_elapsed=0
-    start_batch=$(date +%s%3N)
     while [ $exitstep = 'false' ] ; do
         let x=x+1
 	if [ "$call_step" -lt $x ] ;then
