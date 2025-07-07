@@ -390,6 +390,22 @@ cat >> /etc/freeswitch/sip_profiles/external/call-test-trk.xml <<EOF
   <param name="context" value="default"/>
 </gateway>
 EOF
+
+# -------------------------------------------------------------
+# Create outbound dialplan for loopback redirection to SIP Gateway
+# -------------------------------------------------------------
+echo -e "Creating local outbound dialplan..."
+
+cat > /etc/freeswitch/dialplan/outbound.xml <<EOF
+<include>
+  <extension name="gateway-outbound">
+    <condition field="destination_number" expression="^(9500)$">
+      <action application="bridge" data="sofia/gateway/call-test-trk/\$1"/>
+    </condition>
+  </extension>
+</include>
+EOF
+
 fi
 
 echo -e " *******************************************************************************************"
@@ -480,17 +496,33 @@ while [ "$exitcalls" = "false" ]; do
 	if [ "$call_step" -lt $x ] ;then
 	    exitstep=true
 	fi
-   
-	base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
-        if [ "$recording" = "yes" ]; then
-            timestamp=$(date +%s%N)
-            recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
-	    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
-        else
-            originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
-        fi
-        fs_cli -x "originate $originate_string" >/dev/null 2>&1
-	
+
+	# -------------------------------------------------------------
+	# Originate long-duration call via loopback and outbound dialplan
+	# -------------------------------------------------------------
+
+	base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name,originate_timeout=10"
+
+	if [ "$recording" = "yes" ]; then
+    	    timestamp=$(date +%s%N)
+    	    recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
+    	    originate_string="{${base_params},execute_on_answer=record_session:${recording_file}}loopback/9500@outbound &playback(jonathan.wav)"
+	else
+    	    originate_string="{${base_params}}loopback/9500@outbound &playback(jonathan.wav)"
+	fi
+
+	fs_cli -x "originate $originate_string" >/dev/null 2>&1
+
+	#base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
+        #if [ "$recording" = "yes" ]; then
+        #    timestamp=$(date +%s%N)
+        #    recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
+	#    originate_string="{${base_params},execute_on_answer=record_session:$recording_file}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
+        #else
+        #    originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
+        #fi
+        #fs_cli -x "originate $originate_string" >/dev/null 2>&1
+ 
         sleep "$slepcall"
     done
     end_batch=$(date +%s%3N)
