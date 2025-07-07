@@ -451,7 +451,7 @@ while [ "$exitcalls" = "false" ]; do
     RKBPS=$((RBPS / 128))
     bwtx=$((TKBPS / seconds))
     bwrx=$((RKBPS / seconds))
-    activecalls=$(asterisk -rx "core show calls" | grep "active" | cut -d' ' -f1)
+    activecalls=$(fs_cli -x "show channels count" | grep total | awk '{print $1}')
     load=$(cat /proc/loadavg | awk '{print $1}')
     cpu=`top -n 1 | awk 'FNR > 7 {s+=$10} END {print s}'`
     cpuint=${cpu%.*}
