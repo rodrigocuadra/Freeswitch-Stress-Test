@@ -476,14 +476,14 @@ while [ "$exitcalls" = "false" ]; do
   
     exitstep=false
     x=1
+    total_elapsed=0
     start_batch=$(date +%s%3N)
     while [ $exitstep = 'false' ] ; do
         let x=x+1
 	if [ "$call_step" -lt $x ] ;then
 	    exitstep=true
 	fi
-   
-	base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
+   	base_params="ignore_early_media=true,origination_caller_id_number=9600,absolute_codec_string=$codec_name"
         if [ "$recording" = "yes" ]; then
             timestamp=$(date +%s%N)
             recording_file="/tmp/stress_test_${x}_${timestamp}.wav"
@@ -491,13 +491,14 @@ while [ "$exitcalls" = "false" ]; do
         else
             originate_string="{${base_params}}sofia/gateway/call-test-trk/9500 &playback(jonathan.wav)"
         fi
+        call_start=$(date +%s%3N)
         fs_cli -x "originate $originate_string" >/dev/null 2>&1
-	
+	call_end=$(date +%s%3N)
+        call_elapsed=$((call_end - call_start))
+        total_elapsed=$((total_elapsed + call_elapsed))
         sleep "$slepcall"
     done
-    end_batch=$(date +%s%3N)
-    batch_elapsed=$((end_batch - start_batch))
-    avg_elapsed=$((batch_elapsed / call_step))
+    avg_elapsed=$((total_elapsed / call_step))
     let step=step+1
     let i=i+"$call_step"
     if [ "$cpu" -gt "$maxcpuload" ] ;then
