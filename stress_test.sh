@@ -381,13 +381,13 @@ sleep 5
 # -------------------------------------------------------------
 echo -e "Creating local SIP gateway configuration..."
 
-cat >> /etc/freeswitch/sip_profiles/external/call-test-trk.xml <<EOF
+cat > /etc/freeswitch/sip_profiles/external/call-test-trk.xml <<EOF
 <gateway name="call-test-trk">
   <param name="username" value="calltest"/>
   <param name="password" value="test123"/>
   <param name="proxy" value="$ip_remote:5080"/>
   <param name="register" value="true"/>
-  <param name="context" value="default"/>
+  <param name="context" value="outbound"/>
 </gateway>
 EOF
 
