@@ -376,10 +376,10 @@ echo -e " **********************************************************************
 ssh -p $ssh_remote_port root@$ip_remote "systemctl restart freeswitch"
 for i in {1..15}; do
     if ssh -p $ssh_remote_port root@$ip_remote "fs_cli -x 'status' &>/dev/null"; then
-        echo "✅ FreeSWITCH está operativo en $ip_remote"
+        # echo "✅ FreeSWITCH está operativo en $ip_remote"
         break
     else
-        echo "⏳ Esperando que FreeSWITCH se levante... ($i/15)"
+        # echo "⏳ Esperando que FreeSWITCH se levante... ($i/15)"
         sleep 1
     fi
 done
@@ -407,10 +407,10 @@ echo -e " **********************************************************************
 systemctl restart freeswitch
 for i in {1..15}; do
     if fs_cli -x "status" &>/dev/null; then
-        echo "✅ FreeSWITCH está operativo localmente"
+        # echo "✅ FreeSWITCH está operativo localmente"
         break
     else
-        echo "⏳ Esperando que FreeSWITCH levante... ($i/15)"
+        # echo "⏳ Esperando que FreeSWITCH levante... ($i/15)"
         sleep 1
     fi
 done
