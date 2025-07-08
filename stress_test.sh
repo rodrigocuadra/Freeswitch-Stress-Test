@@ -461,7 +461,7 @@ if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
         -H "Content-Type: application/json" \
         -d "{
 	    \"test_type\": \"$test_type\",
-            \"asterisk_version\": \"$FREESWITCH_VERSION\",
+            \"freeswitch_version\": \"$FREESWITCH_VERSION\",
             \"core_cpu\": \"$CPU_CORES\",
             \"cpu_model\": \"$CPU_MODEL\",
             \"total_ram\": \"$TOTAL_RAM\",
