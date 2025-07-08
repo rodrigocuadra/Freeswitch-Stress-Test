@@ -653,20 +653,21 @@ if [ -f data.csv ]; then
         printf("• ⌛ Avg Delay per Call..........: %.2f ms\n", avg_delay_per_call);
 	printf("• ➕ Estimated Calls/Hour (~%ds): %.0f\n", dur, est_calls_per_hour);
     }'
+    if [ "$WEB_NOTIFY" = false ]; then
+    	# ✅ Append system info
+    	echo -e "\n🧠 CPU Info:"
+    	lscpu | grep -E 'Model name|^CPU\(s\)|CPU MHz' | grep -v NUMA
 
-    # ✅ Append system info
-    echo -e "\n🧠 CPU Info:"
-    lscpu | grep -E 'Model name|^CPU\(s\)|CPU MHz' | grep -v NUMA
-
-    echo -e "\n💾 RAM Info:"
-    free -h | awk '/^Mem:/ {print "Total Memory: " $2}'
-
+    	echo -e "\n💾 RAM Info:"
+    	free -h | awk '/^Mem:/ {print "Total Memory: " $2}'
+    fi
 else
     echo "❌ data.csv not found."
 fi
-
+if [ "$WEB_NOTIFY" = false ]; then
 echo -e "***************************************************************************************************"
 echo -e "*                                       Test Complete                                             *"
 echo -e "*                                  Result in data.csv file                                        *"
 echo -e "***************************************************************************************************"
 echo -e "${NC}"
+fi
