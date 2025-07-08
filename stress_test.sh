@@ -460,6 +460,7 @@ if [ "$web_notify_url_base" != "" ] && [ "$WEB_NOTIFY" = true ]; then
     curl --silent --output /dev/null --write-out '' -X POST "$info_url" \
         -H "Content-Type: application/json" \
         -d "{
+	    \"test_type\": \"$test_type\",
             \"asterisk_version\": \"$FREESWITCH_VERSION\",
             \"core_cpu\": \"$CPU_CORES\",
             \"cpu_model\": \"$CPU_MODEL\",
