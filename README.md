@@ -75,6 +75,31 @@ You’ll be prompted to:
 * Input IPs of local and remote servers
 * Choose test parameters (codecs, call duration, step size)
 
+```
+************************************************************
+*        Welcome to the FreeSWITCH Stress Test Tool        *
+*              All options are mandatory                   *
+************************************************************
+
+config file
+IP Local.............................................. >  192.168.10.33
+IP Remote............................................. >  192.168.10.34
+SSH Remote Port (Default is 22)....................... >  22
+Network Interface name (ej: eth0)..................... >  eth0
+Codec (1.-PCMU, 2.-G279, 3.- OPUS).................... >  1
+Recording Calls (yes,no).............................. >  no
+Max CPU Load (Recommended 75%)........................ >  75
+Calls Step (Recommended 5-100)........................ >  100
+Seconds between each step (Recommended 5-30).......... >  4
+Estimated Call Duration Seconds (ej: 180)............. >  180
+Web server URL base (e.g., http://192.168.5.5:8000)... >  http://192.168.10.30:8000
+************************************************************
+*                   Check Information                      *
+*        Make sure that both server have communication     *
+************************************************************
+Are you sure to continue with this settings? (yes,no) > 
+```
+
 🧪 What the script does:
 
 * Creates SIP gateway to the target server
