@@ -11,6 +11,12 @@ Use this toolkit to:
 
 ---
 
+## 📎 Related Projects
+
+* [Asterisk Stress Test Toolkit](https://github.com/rodrigocuadra/Asterisk-Stress-Test)
+
+---
+
 ## 📦 Repository Contents
 
 | File             | Description                                    |
@@ -174,12 +180,6 @@ VitalPBX
 Do **not run in production** unless under supervision and with network isolation.
 
 Use responsibly.
-
----
-
-## 📎 Related Projects
-
-* [Asterisk Stress Test Toolkit](https://github.com/rodrigocuadra/Asterisk-Stress-Test)
 
 ---
 
