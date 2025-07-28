@@ -182,5 +182,3 @@ Do **not run in production** unless under supervision and with network isolation
 Use responsibly.
 
 ---
-
-Happy benchmarking! 🎧📶
