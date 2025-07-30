@@ -33,7 +33,7 @@ Use this toolkit to:
 * Root access
 * Outbound internet access (to pull media and install dependencies)
 * Open UDP ports: 5060, 5080 for SIP / 10000–20000 for RTP
-* Minimum: 2 vCPUs, 2 GB RAM
+* Minimum: 2 vCPUs, 4 GB RAM
 
 ---
 
