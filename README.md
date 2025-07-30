@@ -58,6 +58,8 @@ chmod +x install_fs.sh
 
 ## 📞 Step 2: Run the Stress Test
 
+On the first of the two Freeswitch servers run:
+
 **Stress Test**
 ```bash
 mkdir /opt/stress_test
